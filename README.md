@@ -28,6 +28,6 @@ the Professor (displayed using XQuartz).
 
 ## Built With
 * IDE: Xcode
-* Language: C++
+* Language: C++ 
 * Display Program: XQuartz
 * Audio Library: irrKlang
