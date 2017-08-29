@@ -26,6 +26,9 @@
 //////////////////////-----------GLOBALS--------------/////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
+#define GRID_WIDTH 30 
+#define GRID_HEIGHT 40
+
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------STUDENTWORLD--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -36,11 +39,23 @@ public:
   virtual void init(void);
   virtual int move(void);
   virtual void clean_up(void);
+  void add_actor(Actor* actor);                  // Add an actor to the game field
+  void add_initial_actors(void);                 // Add initial actors to the game field (i.e. player spaceship)
+  void add_additional_actors(void);              // Add additional actors during the move() phase (i.e. alien spaceships, goodies, etc.)
+  void update_scoreboard(void);                  // Update the scoreboard at the top of the game screen
+  void update_round(void);                       // Increment the round number once a player completes the current round
+  void update_alien_count(void);                 // Decrements the count for the number of aliens present in the current round
+  void set_round(unsigned int value);            // Set the current round
+  void set_alien_count(unsigned int value);      // Set the alien count
+  unsigned int get_round(void) const;            // Returns the current round number
+  unsigned int get_alien_count(void) const;      // Returns the count of the number of aliens present in the current round
   virtual ~StudentWorld(void);
 
 private:
-  std::vector<Actor*> m_actors;                               // Vector containing all of the actor objects
-  Spaceship* m_spaceship;                                     // Specific member to reference the player's spaceship
+  std::vector<Actor*>   m_actors;                // Vector containing all of the actor objects
+  Spaceship*            m_spaceship;             // Specific member to reference the player's spaceship
+  unsigned int          m_round;                 // The current round that the player is on
+  unsigned int          m_alien_count;           // The number of aliens still alive in the current round
 };
 
 #endif // _GAMEWORLD_H_

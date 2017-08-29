@@ -50,6 +50,26 @@ Actor::~Actor() {
 ///////////////////////-----------SPACESHIP--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
+Spaceship::Spaceship(int start_x, int start_y, StudentWorld* world)
+: Actor(IID_PLAYER_SHIP, 15, 1, world), m_health(50), m_torpedoes(0) { set_visible(true); }
+
+void Spaceship::do_something(void) {
+    // Check the current status of the player spaceship
+    if (!is_alive()) { return; }
+    
+    return;
+}
+
+void Spaceship::update_health(unsigned int how_much) { m_health += how_much; }
+
+void Spaceship::update_torpedoes(unsigned int how_much) { m_torpedoes += how_much; }
+
+unsigned int Spaceship::get_health(void) const { return m_health; }
+
+unsigned int Spaceship::get_torpedoes(void) const { return m_torpedoes; }
+
+Spaceship::~Spaceship() { set_visible(false); }
+
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------NACHLING--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
