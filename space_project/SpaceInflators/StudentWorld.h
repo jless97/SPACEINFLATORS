@@ -32,17 +32,15 @@
 
 class StudentWorld : public GameWorld {
 public:
-  // Constructor
   StudentWorld(std::string asset_dir);
-  // Destructor
-  virtual ~StudentWorld(void);
-  /* GameWorld Virtual Functions */
   virtual void init(void);
   virtual int move(void);
   virtual void clean_up(void);
+  virtual ~StudentWorld(void);
 
 private:
-
+  std::vector<Actor*> m_actors;                               // Vector containing all of the actor objects
+  Spaceship* m_spaceship;                                     // Specific member to reference the player's spaceship
 };
 
 #endif // _GAMEWORLD_H_

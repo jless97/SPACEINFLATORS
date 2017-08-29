@@ -28,14 +28,8 @@ using namespace std;
 
 GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asset_dir); }
 
-///////////////////////////////////////////////////////////////////////////
-/////////////-----------CONSTRUCTOR/DESTRUCTOR--------------///////////////
-///////////////////////////////////////////////////////////////////////////
-
 StudentWorld::StudentWorld(std::string asset_dir)
-:GameWorld(asset_dir) {
-
-}
+:GameWorld(asset_dir) {}
 
 StudentWorld::~StudentWorld() {
 
@@ -46,7 +40,9 @@ void StudentWorld::init() {
 }
 
 int StudentWorld::move() {
-    return GWSTATUS_CONTINUE_GAME;
+    
+  
+  return GWSTATUS_CONTINUE_GAME;
 }
 
 void StudentWorld::clean_up() {

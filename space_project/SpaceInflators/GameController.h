@@ -54,22 +54,22 @@ public:
   void set_game_stat_text(std::string text) { m_game_stat_text = text; }
   void do_something();
   void reshape(int w, int h);
-	void keyboard_event(unsigned char key, int x, int y);
-	void specialkeyboard_event(int key, int x, int y);
+  void keyboard_event(unsigned char key, int x, int y);
+  void specialkeyboard_event(int key, int x, int y);
   void quit_game() { set_game_state(quit); }
 	  // Meyers singleton pattern
 	static GameController& get_instance() { static GameController instance; return instance; }
 
 private:
-  GameWorld*	m_gw;
-  GameControllerState	m_game_state;
-  GameControllerState	m_next_state_after_prompt;
-  int 		m_last_key_hit;
-  bool        m_single_step;
-  std::string	m_game_stat_text;
-  std::string	m_main_message;
-  std::string	m_second_message;
-  int         m_cur_intra_frame_tick;
+  GameWorld*	            m_gw;
+  GameControllerState	    m_game_state;
+  GameControllerState	    m_next_state_after_prompt;
+  int 		                m_last_key_hit;
+  bool                      m_single_step;
+  std::string	            m_game_stat_text;
+  std::string	            m_main_message;
+  std::string	            m_second_message;
+  int                       m_cur_intra_frame_tick;
   typedef std::map<int, std::string>           SoundMapType;
   typedef std::map<int, void(*)(GraphObject*)> DrawMapType;
   SoundMapType m_sound_map;
@@ -78,9 +78,9 @@ private:
   void set_game_state(GameControllerState s) {
     if (m_game_state != quit) { m_game_state = s; }
   }
-	void init_drawers_and_sounds();
+  void init_drawers_and_sounds();
   void display_game_play();
-	DrawMapType  m_draw_map;
+  DrawMapType  m_draw_map;
 };
 
 inline GameController& Game() { return GameController::get_instance(); }
