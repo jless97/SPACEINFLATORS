@@ -150,7 +150,7 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
           {
             actor->set_dead();
             play_sound(SOUND_ENEMY_HIT);
-            dynamic_cast<Spaceship*>(m_actors[i])->update_health(-2);
+            dynamic_cast<Spaceship*>(m_actors[i])->update_health(dynamic_cast<SepticBullet*>(actor)->get_attack_power());
           }
         }
         // Player spaceship
@@ -181,7 +181,7 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
       {
         actor->set_dead();
         play_sound(SOUND_PLAYER_HIT);
-        m_spaceship->update_health(-2);
+        m_spaceship->update_health(dynamic_cast<SepticBullet*>(actor)->get_attack_power());
       }
     }
     // Alien spaceship

@@ -193,13 +193,16 @@ private:
 class SepticBullet : public Actor
 {
 public:
-  SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet);
+  SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet, int image_id=IID_BULLET);
   virtual void do_something(void);
   bool get_projectile_viewpoint(void) const;        // Returns if the bullet (or torpedo) belongs to the player spaceship or an alien
+  unsigned int get_attack_power(void) const;        // Returns the attack power of the bullet object
+  void set_attack_power(unsigned int value);        // Sets the attack power of the bullet object
   virtual ~SepticBullet();
   
 private:
   bool m_spaceship_bullet;
+  unsigned int m_attack_power;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -209,9 +212,9 @@ private:
 class FlatulenceTorpedo : public SepticBullet
 {
 public:
-  FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world);
-  virtual void do_something(void);
+  FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet);
   virtual ~FlatulenceTorpedo();
+  
 private:
 };
 

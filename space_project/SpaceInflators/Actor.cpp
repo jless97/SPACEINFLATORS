@@ -88,10 +88,10 @@ void Spaceship::do_something(void)
     switch (user_input)
     {
       // Directional Input
-      case KEY_PRESS_UP: if (y <= VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); break;
-      case KEY_PRESS_DOWN: if (y >= 0) { move_to(x, y - 1); } update_bullet_shoot(false); break;
-      case KEY_PRESS_LEFT: if (x >= 0) { move_to(x - 1, y); } update_bullet_shoot(false); break;
-      case KEY_PRESS_RIGHT: if (x <= VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); break;
+      case KEY_PRESS_UP: if (y <= VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_DOWN: if (y >= 0) { move_to(x, y - 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_LEFT: if (x >= 0) { move_to(x - 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_RIGHT: if (x <= VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       // Projectile Input
       case KEY_PRESS_SPACE:
         if (get_bullet_shoot()) { update_bullet_shoot(false); return; } // If player fired bullet previous tick, can't fire this tick
@@ -109,9 +109,13 @@ void Spaceship::do_something(void)
         // Else, add new FlatulenceTorpedo to the space field, play sound, and set state to indicate a torpedo was just fired
         else
         {
-          update_torpedo_shoot(true);
-          spaceship_world->play_sound(SOUND_PLAYER_TORPEDO);
-          /// TODO: add flatulence torpedo to the play field
+          if (get_torpedoes() >= 1)
+          {
+            update_torpedo_shoot(true);
+            update_torpedoes(-1);
+            spaceship_world->play_sound(SOUND_PLAYER_TORPEDO);
+            new FlatulenceTorpedo(x, y + 1, spaceship_world, true);
+          }
         }
         update_bullet_shoot(false);
         break;
@@ -181,8 +185,9 @@ Spaceship::~Spaceship() { set_visible(false); }
 ////////////////////////-----------BULLET--------------////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-SepticBullet::SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet)
-: Actor(IID_BULLET, start_x, start_y, world), m_spaceship_bullet(player_spaceship_bullet) { set_visible(true); world->add_actor(this); }
+SepticBullet::SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet, int image_id)
+: Actor(image_id, start_x, start_y, world), m_spaceship_bullet(player_spaceship_bullet), m_attack_power(2)
+{ set_visible(true); world->add_actor(this); }
 
 void SepticBullet::do_something(void)
 {
@@ -220,8 +225,17 @@ void SepticBullet::do_something(void)
 
 bool SepticBullet::get_projectile_viewpoint(void) const { return m_spaceship_bullet == true; }
 
+unsigned int SepticBullet::get_attack_power(void) const { return m_attack_power; }
+
+void SepticBullet::set_attack_power(unsigned int value) { m_attack_power = value; }
+
 SepticBullet::~SepticBullet() { set_visible(false); }
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------TORPEDO--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
+
+FlatulenceTorpedo::FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet)
+: SepticBullet(start_x, start_y, world, player_spaceship_bullet, IID_TORPEDO) { set_attack_power(8); }
+
+FlatulenceTorpedo::~FlatulenceTorpedo() { set_visible(false); }
