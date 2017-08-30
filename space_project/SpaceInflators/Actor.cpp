@@ -90,8 +90,8 @@ void Spaceship::do_something(void)
       // Directional Input
       case KEY_PRESS_UP: if (y <= VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       case KEY_PRESS_DOWN: if (y >= 0) { move_to(x, y - 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_LEFT: if (x >= 0) { move_to(x - 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_RIGHT: if (x <= VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_LEFT: if (x > 0) { move_to(x - 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_RIGHT: if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       // Projectile Input
       case KEY_PRESS_SPACE:
         if (get_bullet_shoot()) { update_bullet_shoot(false); return; } // If player fired bullet previous tick, can't fire this tick
