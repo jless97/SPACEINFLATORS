@@ -65,7 +65,7 @@ private:
 class Spaceship : public Actor
 {
 public:
-  Spaceship(int start_x, int start_y, StudentWorld* world);
+  Spaceship(StudentWorld* world, int image_id=IID_PLAYER_SHIP, int start_x=15, int start_y=1, unsigned int health=50);
   virtual void do_something(void);
   void update_health(unsigned int how_much);      // Update health when spaceships either gain/lose health points
   void update_torpedoes(unsigned int how_much);   // Update the number of torpedoes a spaceship currently has
@@ -91,11 +91,12 @@ private:
 class Nachling : public Spaceship
 {
 public:
-  Nachling(int start_x, int start_y, StudentWorld* world);
+  Nachling(StudentWorld* world, int start_x, int start_y);
   virtual void do_something(void);
   virtual ~Nachling();
   
 private:
+  unsigned int m_state;
 };
 
 

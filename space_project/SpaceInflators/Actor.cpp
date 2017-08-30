@@ -64,8 +64,9 @@ Star::~Star() { set_visible(false); }
 ///////////////////////-----------SPACESHIP--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-Spaceship::Spaceship(int start_x, int start_y, StudentWorld* world)
-: Actor(IID_PLAYER_SHIP, 15, 1, world), m_health(50), m_torpedoes(0), m_bullet_shoot(false), m_torpedo_shoot(false) { set_visible(true); }
+Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, unsigned int health)
+: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(0), m_bullet_shoot(false), m_torpedo_shoot(false)
+{ set_visible(true); }
 
 void Spaceship::do_something(void)
 {
@@ -126,9 +127,7 @@ void Spaceship::do_something(void)
   
   // Check to see if the player spaceship has collided with any alien spaceships
   spaceship_world->check_collision(this);
-  
-  // Check to see if the player spaceship has been hit by an alien spaceship projectile
-  
+    
   // If the player has lost all energy (i.e. health points), then player loses a life
   if (get_health() <= 0) { set_dead(); spaceship_world->play_sound(SOUND_PLAYER_DIE); }
   
@@ -156,6 +155,17 @@ Spaceship::~Spaceship() { set_visible(false); }
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------NACHLING--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
+
+Nachling::Nachling(StudentWorld* world, int start_x, int start_y)
+: Spaceship(world, IID_NACHLING, start_x, start_y, (world->get_round() * 5)), m_state(0) { set_visible(true); world->add_actor(this); }
+
+void Nachling::do_something(void)
+{
+  
+  return;
+}
+
+Nachling::~Nachling() { set_visible(false); }
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------WEALTHY NACHLING--------------///////////////

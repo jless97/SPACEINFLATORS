@@ -44,12 +44,14 @@ void StudentWorld::init(void)
   
   /// TODO: fix (just set to 1 for now)
   set_alien_count(1); // Set the initial alien count to 0
+  
+  new Nachling(this, rand_int(0, 29), 39);
 }
 
 int StudentWorld::move(void)
 {
   add_additional_actors(); // Add additional actors (i.e. stars, aliens, goodies)
-
+  
   update_scoreboard(); // Update the scoreboard display
   
   m_spaceship->do_something(); // Ask the player spaceship to do something this tick
@@ -89,7 +91,7 @@ void StudentWorld::clean_up(void)
 void StudentWorld::add_actor(Actor* actor) { m_actors.push_back(actor); }
 
 // Instantiate the player's spaceship
-void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(15, 1, this); }
+void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(this); }
 
 void StudentWorld::add_additional_actors(void) {
   int N = 4 * get_round(); // Represents the number of aliens to add to the game field each round
