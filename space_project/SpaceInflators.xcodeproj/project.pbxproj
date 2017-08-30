@@ -28,7 +28,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		03C0B4D41F54A71B00F9FFAE /* Actor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Actor.cpp; path = SpaceInflators/Actor.cpp; sourceTree = SOURCE_ROOT; };
+		03C0B4D41F54A71B00F9FFAE /* Actor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = Actor.cpp; path = SpaceInflators/Actor.cpp; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		03C0B4D51F54A71B00F9FFAE /* GameController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameController.cpp; path = SpaceInflators/GameController.cpp; sourceTree = SOURCE_ROOT; };
 		03C0B4D61F54A71B00F9FFAE /* GameWorld.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameWorld.cpp; path = SpaceInflators/GameWorld.cpp; sourceTree = SOURCE_ROOT; };
 		03C0B4D71F54A71B00F9FFAE /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = SpaceInflators/main.cpp; sourceTree = SOURCE_ROOT; };

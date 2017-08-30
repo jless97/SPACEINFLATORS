@@ -16,7 +16,9 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
 #include <vector>
-#include<string>
+#include <algorithm>
+#include <random>
+#include <string>
 #include <iostream> 
 #include <sstream> 
 #include <iomanip> 
@@ -31,39 +33,54 @@ GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asse
 StudentWorld::StudentWorld(std::string asset_dir)
 :GameWorld(asset_dir), m_round(0) {}
 
-StudentWorld::~StudentWorld() {
-
+StudentWorld::~StudentWorld()
+{
+  /// TODO: IMPLEMENT
 }
 
-void StudentWorld::init(void) {
-  add_initial_actors();                                      // Add initial actors
+void StudentWorld::init(void)
+{
+  add_initial_actor(); // Add initial actors (i.e. player spaceship)
   
   /// TODO: fix (just set to 1 for now)
-  set_alien_count(1);                                        // Set the initial alien count to 0
+  set_alien_count(1); // Set the initial alien count to 0
 }
 
-int StudentWorld::move(void) {
-  update_scoreboard();                                       // Update the scoreboard display
-  
-  m_spaceship->do_something();                               // Ask the player spaceship to do something this tick
-  
-  for (int i = 0; i < m_actors.size(); i++) { m_actors[i]->do_something(); }  // Ask each actor in the game to do something this tick
-  
-  add_additional_actors();                                   // Add additional actors
+int StudentWorld::move(void)
+{
+  add_additional_actors(); // Add additional actors (i.e. stars, aliens, goodies)
 
-  if (get_lives() <= 0) { return GWSTATUS_PLAYER_DIED; }     // Check if the player still has lives remaining
+  update_scoreboard(); // Update the scoreboard display
   
-  if (get_alien_count() <= 0) { update_round(); }            // If the player killed all aliens, then advance to the next round
+  m_spaceship->do_something(); // Ask the player spaceship to do something this tick
+  
+  // Ask each actor in the game to do something this tick
+  for (int i = 0; i < m_actors.size(); i++)
+  {
+    if (m_actors[i]->is_alive()) { m_actors[i]->do_something(); }
+  }
+  
+  // Remove newly-dead actors after each tick
+  for (vector<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); ) {
+    if (!(*it)->is_alive()) { delete *it; it = m_actors.erase(it); }
+    else { it++; }
+  }
+  
+  if (!m_spaceship->is_alive()) { return GWSTATUS_PLAYER_DIED; }  // If player dies, then restart round (or end game if no lives remaining)
+  
+  if (get_alien_count() <= 0) { update_round(); } // If the player killed all aliens, then advance to the next round
   
   return GWSTATUS_CONTINUE_GAME;
 }
 
-void StudentWorld::clean_up(void) {
+void StudentWorld::clean_up(void)
+{
   // Remove Player Spaceship
   delete m_spaceship;
   
   // Remove actor objects from the game field
-  for (vector<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); ) {
+  for (vector<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); )
+  {
     delete *it;
     it = m_actors.erase(it);
   }
@@ -71,14 +88,18 @@ void StudentWorld::clean_up(void) {
 
 void StudentWorld::add_actor(Actor* actor) { m_actors.push_back(actor); }
 
-void StudentWorld::add_initial_actors(void) {
-  // Instantiate the player's spaceship
-  m_spaceship = new Spaceship(15, 1, this);
-}
+// Instantiate the player's spaceship
+void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(15, 1, this); }
 
 void StudentWorld::add_additional_actors(void) {
-  int N = 4 * get_round();                                // Represents the number of aliens to add to the game field each round
-  int S = int(2 + 0.5 * get_round());                     // Represents the number of aliens present at a given time in the game field
+  int N = 4 * get_round(); // Represents the number of aliens to add to the game field each round
+  int S = int(2 + 0.5 * get_round()); // Represents the number of aliens present at a given time in the game field
+  
+  if (get_alien_count() >= S) {} // If the number of aliens is greater than or equal to the number allowed per round, don't add more
+  //else { int V = get_alien_count() -
+  
+  // Generate star objects at random x coordinates in the star field
+  if (rand_int(1, 3) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
 }
 
 void StudentWorld::update_scoreboard(void) {
@@ -112,7 +133,79 @@ unsigned int StudentWorld::get_round(void) const { return m_round; }
 
 unsigned int StudentWorld::get_alien_count(void) const { return m_alien_count; }
 
+void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile) {
+  for (int i = 0; i < m_actors.size(); i++)
+  {
+    // Check if player spaceship collided with an alien spaceship or was hit by an alien projectile
+    if (is_player)
+    {
+      // If collision with an alien spaceship
+      if (m_actors[i]->get_id() == IID_NACHLING || m_actors[i]->get_id() == IID_WEALTHY_NACHLING || m_actors[i]->get_id() == IID_SMALLBOT)
+      {
+        // Player Projectile
+        if (is_projectile)
+        {
+          // Player projectile hit an alien spaceship
+          if (actor->get_x() == m_actors[i]->get_x() && actor->get_y() == m_actors[i]->get_y())
+          {
+            actor->set_dead();
+            play_sound(SOUND_ENEMY_HIT);
+            dynamic_cast<Spaceship*>(m_actors[i])->update_health(-2);
+          }
+        }
+        // Player spaceship
+        else
+        {
+          // Player spaceship collided with alien spaceship
+          if (m_spaceship->get_x() == m_actors[i]->get_x() && m_spaceship->get_y() == m_actors[i]->get_y())
+          {
+            m_actors[i]->set_dead();
+            play_sound(SOUND_ENEMY_PLAYER_COLLISION);
+            m_spaceship->update_health(-15);
+            /// TODO: This will never result in Alien dropping goodie (IMPLEMENT)
+            /// TODO: This will never count towards the number of destroyed aliens required to complete the current round
+          }
+        }
+      }
+    }
+  }
+  
+  // Check if alien spaceship collided with the player spaceship or was hit by a player projectile
+  if (is_alien)
+  {
+    // Alien projectile
+    if (is_projectile)
+    {
+      // Alien projectile hit player spaceship
+      if (actor->get_x() == m_spaceship->get_x() && actor->get_y() == m_spaceship->get_y())
+      {
+        actor->set_dead();
+        play_sound(SOUND_PLAYER_HIT);
+        m_spaceship->update_health(-2);
+      }
+    }
+    // Alien spaceship
+    else
+    {
+      // Alien spaceship collided with player spaceship
+      if (actor->get_x() == m_spaceship->get_x() && actor->get_y() == m_spaceship->get_y())
+      {
+        actor->set_dead();
+        play_sound(SOUND_ENEMY_PLAYER_COLLISION);
+        m_spaceship->update_health(-15);
+      }
+    }
+  }
+}
 
+//Generate a random number (Equation used from Project 1 (no need to reinvent the wheel))
+int StudentWorld::rand_int(int min, int max) const {
+  if (max < min) { swap(max, min); }
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::uniform_int_distribution<int> distro(min, max);
+  return distro(generator);
+}
 
 
 

@@ -39,7 +39,7 @@ public:
   int get_x() const { return round_away_from_zero(m_dest_x); }
   // If already moved but not yet animated, use new location anyway.
   int get_y() const { return round_away_from_zero(m_dest_y); }
-  void moveTo(int x, int y) { m_dest_x = x; m_dest_y = y; }
+  void move_to(int x, int y) { m_dest_x = x; m_dest_y = y; }
 
   /* Note: The following should be used by only the framework, not the student */
   bool is_visible() const { return m_visible; }

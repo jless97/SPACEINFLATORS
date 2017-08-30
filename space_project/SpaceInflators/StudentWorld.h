@@ -26,21 +26,19 @@
 //////////////////////-----------GLOBALS--------------/////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-#define GRID_WIDTH 30 
-#define GRID_HEIGHT 40
-
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------STUDENTWORLD--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class StudentWorld : public GameWorld {
+class StudentWorld : public GameWorld
+{
 public:
   StudentWorld(std::string asset_dir);
   virtual void init(void);
   virtual int move(void);
   virtual void clean_up(void);
   void add_actor(Actor* actor);                  // Add an actor to the game field
-  void add_initial_actors(void);                 // Add initial actors to the game field (i.e. player spaceship)
+  void add_initial_actor(void);                 // Add initial actors to the game field (i.e. player spaceship)
   void add_additional_actors(void);              // Add additional actors during the move() phase (i.e. alien spaceships, goodies, etc.)
   void update_scoreboard(void);                  // Update the scoreboard at the top of the game screen
   void update_round(void);                       // Increment the round number once a player completes the current round
@@ -49,6 +47,9 @@ public:
   void set_alien_count(unsigned int value);      // Set the alien count
   unsigned int get_round(void) const;            // Returns the current round number
   unsigned int get_alien_count(void) const;      // Returns the count of the number of aliens present in the current round
+  // Checks if there were any collisions between actor objects
+  void check_collision(Actor* actor, bool is_player=true, bool is_alien=false, bool is_projectile=false);
+  int rand_int(int x, int y) const;              // Generates a random number between x and y
   virtual ~StudentWorld(void);
 
 private:

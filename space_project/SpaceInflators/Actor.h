@@ -28,13 +28,15 @@
 
 class StudentWorld;
 
-class Actor: public GraphObject {
+class Actor: public GraphObject
+{
 public:
   Actor(int image_id, int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void) = 0;
-  StudentWorld* world(void) const;                                  // Returns a pointer to the StudentWorld class
-  void set_dead(void);                                              // If an actor dies, set state to dead (so it can be removed from field)
-  bool is_alive(void) const;                                        // Returns the current state of the actor object
+  StudentWorld* world(void) const;               // Returns a pointer to the StudentWorld class
+  void set_dead(void);                           // If an actor dies, set state to dead (so it can be removed from field)
+  bool is_alive(void) const;                     // Returns the current state of the actor object
+  // Returns true if a spaceship (player or enemy) has collided with another spaceship
   virtual ~Actor();
 
 private:
@@ -46,7 +48,8 @@ private:
 /////////////////////////-----------STAR--------------/////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Star: public Actor {
+class Star: public Actor
+{
 public:
   Star(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -59,26 +62,34 @@ private:
 ///////////////////////-----------SPACESHIP--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Spaceship : public Actor {
+class Spaceship : public Actor
+{
 public:
   Spaceship(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
   void update_health(unsigned int how_much);      // Update health when spaceships either gain/lose health points
   void update_torpedoes(unsigned int how_much);   // Update the number of torpedoes a spaceship currently has
+  void update_bullet_shoot(bool value);           // Update the state of whether the player fired a bullet on the previous tick
+  void update_torpedo_shoot(bool value);          // Update the state of whether the player fired a torpedo on the previous tick
   unsigned int get_health(void) const;            // Returns the current health of the spaceship
   unsigned int get_torpedoes(void) const;         // Returns the current torpedo count of the spaceship
+  bool get_bullet_shoot(void) const;              // Returns true if the player just fired a bullet on the previous tick
+  bool get_torpedo_shoot(void) const;             // Returns true if the player just fired a torpedo on the previous tick
   virtual ~Spaceship();
   
 private:
   unsigned int m_health;
   unsigned int m_torpedoes;
+  bool m_bullet_shoot;
+  bool m_torpedo_shoot;
 };
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------NACHLING--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Nachling : public Spaceship {
+class Nachling : public Spaceship
+{
 public:
   Nachling(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -92,7 +103,8 @@ private:
 ///////////////////-----------WEALTHY NACHLING--------------///////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class WealthyNachling : public Nachling {
+class WealthyNachling : public Nachling
+{
 public:
   WealthyNachling(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -105,7 +117,8 @@ private:
 ////////////////////////-----------SMALLBOT--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Smallbot : public Spaceship {
+class Smallbot : public Spaceship
+{
 public:
   Smallbot(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -118,7 +131,8 @@ private:
 /////////////////////////-----------GOODIE--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Goodie : public Actor {
+class Goodie : public Actor
+{
 public:
   Goodie(int start_x, int start_y, StudentWorld* world, int ticks);
   virtual void do_something(void);
@@ -134,7 +148,8 @@ private:
 /////////////////////////-----------ENERGY--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Energy : public Goodie {
+class Energy : public Goodie
+{
 public:
   Energy(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -147,7 +162,8 @@ private:
 //////////////////////-----------EXTRA LIVE--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class ExtraLive : public Goodie {
+class ExtraLive : public Goodie
+{
 public:
   ExtraLive(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -160,7 +176,8 @@ private:
 /////////////////////-----------EXTRA TORPEDO--------------////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class ExtraTorpedo : public Goodie {
+class ExtraTorpedo : public Goodie
+{
 public:
   ExtraTorpedo(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
@@ -173,24 +190,28 @@ private:
 ////////////////////////-----------BULLET--------------////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Bullet : public Actor {
+class SepticBullet : public Actor
+{
 public:
-  Bullet(int start_x, int start_y, StudentWorld* world);
+  SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet);
   virtual void do_something(void);
-  virtual ~Bullet();
+  bool get_projectile_viewpoint(void) const;        // Returns if the bullet (or torpedo) belongs to the player spaceship or an alien
+  virtual ~SepticBullet();
   
 private:
+  bool m_spaceship_bullet;
 };
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------TORPEDO--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Torpedo : public Bullet {
+class FlatulenceTorpedo : public SepticBullet
+{
 public:
-  Torpedo(int start_x, int start_y, StudentWorld* world);
+  FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
-  virtual ~Torpedo();
+  virtual ~FlatulenceTorpedo();
 private:
 };
 
