@@ -65,7 +65,7 @@ Star::~Star() {}
 ///////////////////////////////////////////////////////////////////////////
 
 Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, int health)
-: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(10), m_bullet_shoot(false) { set_visible(true); }
+: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(20), m_bullet_shoot(false) { set_visible(true); }
 
 void Spaceship::do_something(void)
 {

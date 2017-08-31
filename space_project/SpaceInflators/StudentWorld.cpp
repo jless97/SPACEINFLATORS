@@ -31,7 +31,7 @@ using namespace std;
 GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asset_dir); }
 
 StudentWorld::StudentWorld(std::string asset_dir)
-:GameWorld(asset_dir), m_round(1) {}
+:GameWorld(asset_dir), m_round(5) {}
 
 StudentWorld::~StudentWorld() { clean_up(); }
 
@@ -54,7 +54,7 @@ int StudentWorld::move(void)
   
   update_scoreboard(); // Update the scoreboard display
   
-  // Simple new feature (every 5 rounds, add 10 torpedoes to the player's inventory)
+  // Simple new feature (every 10 rounds, add 10 torpedoes to the player's inventory)
   static unsigned int multiple = 1;
   if (get_round() >= (BONUS_TORPEDOES * multiple)) { m_spaceship->update_torpedoes(10); multiple++; }
   
@@ -88,7 +88,7 @@ int StudentWorld::move(void)
     set_max_aliens_on_screen(); // Sets the max number of aliens that can be present on screen at any given time
     set_current_aliens_on_screen(); // Sets the current number of aliens present on screen to 0
   }
-  
+
   return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -148,7 +148,7 @@ void StudentWorld::add_additional_actors(void) {
 void StudentWorld::update_scoreboard(void) {
   // Update scoreboard fields
   unsigned int score = get_score();
-  unsigned int round = get_round();
+  unsigned int round = get_round() - 4;
   int energy = m_spaceship->get_health();
   if (energy < 0) { energy = 0; }
   unsigned int torpedoes = m_spaceship->get_torpedoes();
