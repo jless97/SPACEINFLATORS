@@ -204,6 +204,7 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
       // If collision with an alien spaceship
       if (m_actors[i]->get_id() == IID_NACHLING || m_actors[i]->get_id() == IID_WEALTHY_NACHLING || m_actors[i]->get_id() == IID_SMALLBOT)
       {
+        if (!m_actors[i]->is_alive()) { continue; }
         // Player Projectile
         if (is_projectile)
         {

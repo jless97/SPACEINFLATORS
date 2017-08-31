@@ -196,6 +196,7 @@ void Nachling::do_something(void)
       else { set_horizontal_movement_direction(Nachling::Direction::right); }
       // Set the Horizontal Movement Remaining steps that the Nachling will take in the direction just calculated
       set_horizontal_movement_remaining(get_horizontal_movement_distance());
+      move_to(x, y - 1);
     }
     // If Nachling is to the left or to the right of the player spaceship
     else if (nachling_world->rand_int(1, 3) == 1)
@@ -207,7 +208,7 @@ void Nachling::do_something(void)
       else if (x > nachling_world->get_player_spaceship_x_coord())
       { if (x > 0) { move_to(x - 1, y - 1); set_active(false); return; } }
     }
-    move_to(x, y - 1);
+    else { move_to(x, y - 1); }
     // Check if the Nachling went below the bottom of the space field, if so remove Nachling from space field
     if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
     set_active(false); return;
