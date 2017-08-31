@@ -167,10 +167,7 @@ void Nachling::do_something(void)
   if (!is_alive()) { return; } // Check the current status of the Nachling
   
   // Function for the WealthyNachling to check if it is malfunctioning
-  if (check_malfunctioning())
-  {
-    return;
-  }
+  if (check_malfunctioning()) { return; }
   
   StudentWorld* nachling_world = world(); // Grab a pointer to the StudentWorld
   
@@ -188,11 +185,17 @@ void Nachling::do_something(void)
         else { new FreeTorpedo(x, y, nachling_world); } // Add a Free Torpedo Goodie to the space field
       }
     }
+    // If a Smallbot, then perhaps drop a Free Ship goodie
+    if (is_smallbot())
+    {
+      if (nachling_world->rand_int(1, 3) == 1) { new FreeShip(x, y, nachling_world); } // Add a FreeShip goodie to the space field
+    }
     set_dead();
     nachling_world->play_sound(SOUND_ENEMY_DIE);
   }
   
   if (!get_active()) { set_active(true); return; } // Nachling can't do something this tick, allow it to do something next tick, and return
+  else { set_active(false); }
   
   // If a smallbot, do the smallbot algorithm
   if (is_smallbot()) { do_smallbot_movement(); }
@@ -222,15 +225,14 @@ void Nachling::do_something(void)
         {
           // If Nachling is to the left of the player spaceship, move diagonal right-down, don't allow movement next tick, instantly return
           if (x < nachling_world->get_player_spaceship_x_coord())
-          { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y - 1); set_active(false); return; } }
+          { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y - 1); return; } }
           // If Nacling is to the right of the player spaceship, move diagonal left-down, don't allow movement next tick, instantly return
           else if (x > nachling_world->get_player_spaceship_x_coord())
-          { if (x > 0) { move_to(x - 1, y - 1); set_active(false); return; } }
+          { if (x > 0) { move_to(x - 1, y - 1); return; } }
         }
         else { move_to(x, y - 1); }
         // Check if the Nachling went below the bottom of the space field, if so remove Nachling from space field
         if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
-        set_active(false); return;
         break;
       case 1:
         if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); } //set_active(false); return; }
@@ -257,10 +259,9 @@ void Nachling::do_something(void)
           }
         }
         if (nachling_world->rand_int(1, 20) == 1) { set_state(2); }
-        set_active(false); return;
         break;
       case 2:
-        if (y == VIEW_HEIGHT - 1) { set_state(0); set_active(false); return; } // If at the top of the screen, set state to 0, and return
+        if (y == VIEW_HEIGHT - 1) { set_state(0); return; } // If at the top of the screen, set state to 0, and return
         // If at the far left of the screen, move diagonal up-right
         if (x == 0)
         {
@@ -279,10 +280,8 @@ void Nachling::do_something(void)
           if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Direction::left); move_to(x - 1, y + 1); }
           else { set_horizontal_movement_direction(Direction::right); move_to(x + 1, y + 1); }
         }
-        set_active(false); return;
         break;
       default:
-        set_active(false); // After doing something this tick, don't allow Nachling to do something next tick'
         break;
     }
   }
@@ -379,7 +378,7 @@ bool Smallbot::is_wealthy(void) const { return false; }
 
 bool Smallbot::is_smallbot(void) const { return true; }
 
-void Smallbot::do_smallbot_movement(void) 
+void Smallbot::do_smallbot_movement(void)
 {
   int x = get_x(), y = get_y(); // Get the current coordinates of the Smallbot
   

@@ -123,14 +123,16 @@ void StudentWorld::add_additional_actors(void) {
     // Add Wealthy Nachling
     if (rand_int(1, 10) < 2)
     {
-      new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
+      //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
       update_current_aliens_on_screen(1);
+      new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
     }
     // Add Nachling
     else
     {
       //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
-      new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
+      //new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
+      new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
       update_current_aliens_on_screen(1);
     }
   }
