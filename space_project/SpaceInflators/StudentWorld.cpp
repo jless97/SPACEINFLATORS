@@ -48,12 +48,11 @@ void StudentWorld::init(void)
   set_aliens_left_this_round(get_aliens_per_round()); // Sets the number of aliens left to kill for round 1
   set_max_aliens_on_screen(); // Sets the max number of aliens that can be present on screen at any given time during round 1
   set_current_aliens_on_screen(); // Upon initializing the game field, there are no aliens present in the space field
+  set_bullet_count(); // Sets the initial enemy bullet count to 0
 }
 
 int StudentWorld::move(void)
-{
-  cout << "Aliens left to kill" << get_aliens_left_this_round() << endl;
-  
+{  
   add_additional_actors(); // Add additional actors (i.e. stars, aliens, goodies)
   
   update_scoreboard(); // Update the scoreboard display
@@ -111,6 +110,9 @@ void StudentWorld::add_actor(Actor* actor) { m_actors.push_back(actor); }
 void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(this); }
 
 void StudentWorld::add_additional_actors(void) {
+  // Generate star objects at random x coordinates in the space field
+  if (rand_int(1, 3) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
+  
   // If the number of aliens is greater than or equal to the number allowed per round, don't add more aliens
   if (get_current_aliens_on_screen() >= get_max_aliens_on_screen()) { return; }
   
@@ -124,8 +126,8 @@ void StudentWorld::add_additional_actors(void) {
     // Add Wealthy Nachling
     if (rand_int(1, 10) < 2)
     {
-      /// TODO: Add Wealthy Nachling
-      /// Energy of Wealthy Nachling => int E = 8 * get_round();
+      new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
+      update_current_aliens_on_screen(1);
     }
     // Add Nachling
     else
@@ -140,9 +142,6 @@ void StudentWorld::add_additional_actors(void) {
     /// TODO: Add a smallbot
     /// Energy of Smallbot => int E = 12 * get_round();
   }
-  
-  // Generate star objects at random x coordinates in the space field
-  if (rand_int(1, 3) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
 }
 
 void StudentWorld::update_scoreboard(void) {
@@ -170,6 +169,8 @@ void StudentWorld::update_aliens_left_this_round(int how_much) { m_aliens_left_t
 
 void StudentWorld::update_current_aliens_on_screen(int how_much) { m_current_aliens_on_screen += how_much; }
 
+void StudentWorld::update_bullet_count(int how_much) { m_bullet_count += how_much; }
+
 void StudentWorld::set_round(unsigned int value) { m_round = value; }
 
 void StudentWorld::set_aliens_per_round(void) { m_aliens_per_round = 4 * get_round(); }
@@ -180,6 +181,8 @@ void StudentWorld::set_max_aliens_on_screen(void) { m_max_aliens_on_screen = int
 
 void StudentWorld::set_current_aliens_on_screen(void) { m_current_aliens_on_screen = 0; }
 
+void StudentWorld::set_bullet_count() { m_bullet_count = 0; }
+
 unsigned int StudentWorld::get_round(void) const { return m_round; }
 
 int StudentWorld::get_aliens_per_round(void) const { return m_aliens_per_round; }
@@ -189,6 +192,8 @@ int StudentWorld::get_aliens_left_this_round(void) const { return m_aliens_left_
 int StudentWorld::get_max_aliens_on_screen(void) const { return m_max_aliens_on_screen; }
 
 int StudentWorld::get_current_aliens_on_screen(void) const { return m_current_aliens_on_screen; }
+
+int StudentWorld::get_bullet_count(void) const { return m_bullet_count; }
 
 void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile) {
   for (int i = 0; i < m_actors.size(); i++)
@@ -250,22 +255,17 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
       {
         actor->set_dead();
         play_sound(SOUND_PLAYER_HIT);
-        m_spaceship->update_health(dynamic_cast<SepticBullet*>(actor)->get_attack_power());
-      }
-    }
-    // Alien spaceship
-    else
-    {
-      // Alien spaceship collided with player spaceship
-      if (actor->get_x() == m_spaceship->get_x() && actor->get_y() == m_spaceship->get_y())
-      {
-        actor->set_dead();
-        play_sound(SOUND_ENEMY_PLAYER_COLLISION);
-        m_spaceship->update_health(-15);
+        m_spaceship->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
       }
     }
   }
 }
+
+bool StudentWorld::in_line_with_player_spaceship(int x) const { return (m_spaceship->get_x() == x); }
+
+int StudentWorld::get_player_spaceship_x_coord(void) const { return m_spaceship->get_x(); }
+
+int StudentWorld::get_player_spaceship_y_coord(void) const { return m_spaceship->get_y(); }
 
 //Generate a random number (Equation used from Project 1 (no need to reinvent the wheel))
 int StudentWorld::rand_int(int min, int max) const {

@@ -91,12 +91,36 @@ private:
 class Nachling : public Spaceship
 {
 public:
-  Nachling(StudentWorld* world, int start_x, int start_y, int health);
+  enum Direction {
+    none = 0,
+    up,
+    down,
+    left,
+    right
+  };
+  Nachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_NACHLING);
   virtual void do_something(void);
+  virtual bool check_malfunctioning(void);         // For the WealthyNachling
+  void update_horizontal_movement_remaining(int how_much); // Updates the horizontal steps the Nachling has left to take
+  bool get_active(void) const;                     // Returns true if the Nachling can do something this tick
+  unsigned int get_state(void) const;              // Returns the current state of the Nachling
+  unsigned int get_horizontal_movement_distance(void) const; // Returns the number of horizontal steps that a Nachling can take
+  int get_horizontal_movement_remaining(void) const; // Returns the number of horizontal steps the Nachling has left to take
+  Nachling::Direction get_horizontal_movement_direction(void) const; // Returns the direction that the Nachling will move in
+  void set_active(bool value);                     // Flips the status of the Nachling's status to do a move this tick
+  void set_state(unsigned int value);              // Sets the state of the Nachling to do a specified value
+  void set_horizontal_movement_distance(unsigned int value); // Sets the number of horizontal steps that a Nachling can take
+  void set_horizontal_movement_remaining(unsigned int value); // Sets the number of horizontal steps the Nachling has left to take
+  void set_horizontal_movement_direction(Nachling::Direction dir); // Sets the horizontal direction that the Nachling will move in
+  unsigned int compute_mdb(int x) const;           // Computes the Minimum Distance to Border (MDB) value for the Nachling
   virtual ~Nachling();
   
 private:
-  unsigned int m_state;
+  bool         m_active;                           // Nachlings can only do something every other tick
+  unsigned int m_state;                            // Nachlings do specific actions depending on their current state
+  unsigned int m_horizontal_movement_distance;     // The number of horizontal steps the Nachling will take
+  int m_horizontal_movement_remaining;    // The number of horizontal steps the Nachling has left to take (before re-evaluating)
+  Direction m_horizontal_movement_direction;       // The horizontal direction that the Nachling will move in
 };
 
 
@@ -107,11 +131,18 @@ private:
 class WealthyNachling : public Nachling
 {
 public:
-  WealthyNachling(int start_x, int start_y, StudentWorld* world, int health);
-  virtual void do_something(void);
+  WealthyNachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_WEALTHY_NACHLING);
+  virtual bool check_malfunctioning(void);      // Check if the WealthyNachling is malfunctioning
+  void update_resting_ticks(int how_much);      // Updates the number of resting ticks
+  bool get_malfunctioning_state(void) const;    // Returns if the WealthyNachling is malfunctioning
+  int get_resting_ticks(void) const;            // Returns the number of resting ticks
+  void set_malfunctioning_state(bool value);    // Sets the state of whether the WealthyNachling is malfunctioning
+  void set_resting_ticks(int value);            // Sets the number of resting ticks
   virtual ~WealthyNachling();
   
 private:
+  bool m_malfunctioning_state; // Check if the WealthyNachling is malfunctioning
+  int  m_resting_ticks;        // If WealthyNachling starts malfunctioning, it has to wait this amount of ticks
 };
 
 ///////////////////////////////////////////////////////////////////////////
