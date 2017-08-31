@@ -136,7 +136,7 @@ void Spaceship::do_something(void)
 
 void Spaceship::update_health(int how_much) { m_health += how_much; }
 
-void Spaceship::update_torpedoes(unsigned int how_much) { m_torpedoes += how_much; }
+void Spaceship::update_torpedoes(int how_much) { m_torpedoes += how_much; }
 
 void Spaceship::update_bullet_shoot(bool value) { m_bullet_shoot = value; }
 
@@ -144,11 +144,13 @@ void Spaceship::update_torpedo_shoot(bool value) { m_torpedo_shoot = value; }
 
 int Spaceship::get_health(void) const { return m_health; }
 
-unsigned int Spaceship::get_torpedoes(void) const { return m_torpedoes; }
+int Spaceship::get_torpedoes(void) const { return m_torpedoes; }
 
 bool Spaceship::get_bullet_shoot(void) const { return m_bullet_shoot; }
 
 bool Spaceship::get_torpedo_shoot(void) const { return m_torpedo_shoot; }
+
+void Spaceship::set_health(int value) { m_health = value; }
 
 Spaceship::~Spaceship() { set_visible(false); }
 
@@ -172,17 +174,29 @@ void Nachling::do_something(void)
   
   StudentWorld* nachling_world = world(); // Grab a pointer to the StudentWorld
   
+  int x = get_x(), y = get_y(); // Get currents coordinates of the Nachling
+  
   // If the Nachling has lost all energy (i.e. health points), then remove the Nachling from the space field
-  if (get_health() <= 0) { set_dead(); nachling_world->play_sound(SOUND_ENEMY_DIE); }
+  if (get_health() <= 0)
+  {
+    // If a Wealthy Nachling, then perhaps will drop a goodie
+    if (is_wealthy())
+    {
+      if (nachling_world->rand_int(1, 3) == 1)
+      {
+        if (nachling_world->rand_int(1, 2) == 1) { new Energy(x, y, nachling_world); } // Add an Energy Goodie to the space field
+        else { new FreeTorpedo(x, y, nachling_world); } // Add a Free Torpedo Goodie to the space field
+      }
+    }
+    set_dead();
+    nachling_world->play_sound(SOUND_ENEMY_DIE);
+  }
   
   if (!get_active()) { set_active(true); return; } // Nachling can't do something this tick, allow it to do something next tick, and return
-  
-  int x = get_x(), y = get_y(); // Get currents coordinates of the Nachling
   
   // If in state 0
   if (get_state() == 0)
   {
-    cout << "State 0" << endl;
     // If Nachling is in line with the player spaceship, and Nachling isn't in far-left or far-right column
     if (nachling_world->in_line_with_player_spaceship(x) && (x != 0) && (x != VIEW_WIDTH - 1))
     {
@@ -216,7 +230,6 @@ void Nachling::do_something(void)
   // If in state 1
   else if (get_state() == 1)
   {
-    cout << "State 1" << endl;
     if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); } //set_active(false); return; }
     if (get_horizontal_movement_remaining() == 0)
     {
@@ -246,7 +259,6 @@ void Nachling::do_something(void)
   // If in state 2
   else if (get_state() == 2)
   {
-    cout << "State 2" << endl;
     if (y == VIEW_HEIGHT - 1) { set_state(0); set_active(false); return; } // If at the top of the screen, set state to 0, and return
     // If at the far left of the screen, move diagonal up-right
     if (x == 0)
@@ -266,14 +278,15 @@ void Nachling::do_something(void)
       if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Nachling::Direction::left); move_to(x - 1, y + 1); }
       else { set_horizontal_movement_direction(Nachling::Direction::right); move_to(x + 1, y + 1); }
     }
-    set_active(false);
-    return;
+    set_active(false); return;
   }
   
   set_active(false); // After doing something this tick, don't allow Nachling to do something next tick'
   
   return;
 }
+
+bool Nachling::is_wealthy(void) const { return false; }
 
 bool Nachling::check_malfunctioning(void) { return false; }
 
@@ -316,6 +329,8 @@ Nachling::~Nachling() { set_visible(false); world()->update_current_aliens_on_sc
 WealthyNachling::WealthyNachling(StudentWorld* world, int start_x, int start_y, int health, int image_id)
 : Nachling(world, start_x, start_y, health, image_id), m_malfunctioning_state(false), m_resting_ticks(1) {}
 
+bool WealthyNachling::is_wealthy(void) const { return true; }
+
 bool WealthyNachling::check_malfunctioning(void)
 {
   // If WealthyNachling is malfunctioning, update resting ticks
@@ -349,17 +364,78 @@ WealthyNachling::~WealthyNachling() {}
 /////////////////////////-----------GOODIE--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
 
+Goodie::Goodie(int image_id, int start_x, int start_y, StudentWorld* world)
+: Actor(image_id, start_x, start_y, world), m_active(3)
+{ set_visible(true); world->add_actor(this); set_total_ticks((100 / world->get_round() + 30)); set_ticks((100 / world->get_round() + 30)); }
+
+void Goodie::do_something(void)
+{
+  if (!is_alive()) { return; } // Check the current status of the Free Ship goodie
+  
+  if (get_ticks() <= 0) { set_dead(); return; } // If ticks expire, then remove goodie from the space field
+  
+  StudentWorld* free_world = world(); // Grab a pointer to StudentWorld
+  
+  int x = get_x(), y = get_y(); // Get current Free Ship coordinates
+  
+  free_world->check_collision(this, false, false, false, true); // Check if the player spaceship picked up the goodie
+  
+  set_brightness((get_ticks() / get_total_ticks()) + 0.2); // As the goodie remains on the field, it begins to dim as it's time ticks away
+  
+  if (get_active() <= 0) { set_active(3); move_to(x, y - 1); } // If the goodie can move this turn, move down one, and reset counter
+  
+  free_world->check_collision(this, false, false, false, true); // Check if the player spaceship picked up the goodie (after moving down)
+  
+  if (y < 0) { set_dead(); } // If the goodie moved below the space field, then remove it from the game
+  
+  update_active(-1); // Update the counter before the goodie can move down the space field
+  update_ticks(-1); // Update ticks before the free ship will disappear
+}
+
+void Goodie::update_ticks(int how_much) { m_nticks_before_disappear += how_much; }
+
+void Goodie::update_active(int how_much) { m_active += how_much; }
+
+int Goodie::get_total_ticks(void) const { return m_total_ticks; }
+
+int Goodie::get_ticks(void) const { return m_nticks_before_disappear; }
+
+int Goodie::get_active(void) const { return m_active; }
+
+void Goodie::set_total_ticks(int value) { m_total_ticks = value; }
+
+void Goodie::set_ticks(int value) { m_nticks_before_disappear = value; }
+
+void Goodie::set_active(int value) { m_active = value; }
+
+Goodie::~Goodie() { set_visible(false); }
+
+///////////////////////////////////////////////////////////////////////////
+//////////////////////-----------FREE SHIP--------------///////////////////
+///////////////////////////////////////////////////////////////////////////
+
+FreeShip::FreeShip(int start_x, int start_y, StudentWorld* world)
+: Goodie(IID_FREE_SHIP_GOODIE, start_x, start_y, world) {}
+
+FreeShip::~FreeShip() {}
+         
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------ENERGY--------------///////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////
-//////////////////////-----------EXTRA LIVE--------------//////////////////
-///////////////////////////////////////////////////////////////////////////
+Energy::Energy(int start_x, int start_y, StudentWorld* world)
+: Goodie(IID_ENERGY_GOODIE, start_x, start_y, world) {}
+
+Energy::~Energy() {}
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////-----------EXTRA TORPEDO--------------////////////////
 ///////////////////////////////////////////////////////////////////////////
+
+FreeTorpedo::FreeTorpedo(int start_x, int start_y, StudentWorld* world)
+: Goodie(IID_TORPEDO_GOODIE, start_x, start_y, world) {}
+
+FreeTorpedo::~FreeTorpedo() {}
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------BULLET--------------////////////////////
@@ -418,4 +494,4 @@ SepticBullet::~SepticBullet() { set_visible(false); if (!get_projectile_viewpoin
 FlatulenceTorpedo::FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet)
 : SepticBullet(start_x, start_y, world, player_spaceship_bullet, IID_TORPEDO) { set_attack_power(8); }
 
-FlatulenceTorpedo::~FlatulenceTorpedo() { set_visible(false); }
+FlatulenceTorpedo::~FlatulenceTorpedo() {}

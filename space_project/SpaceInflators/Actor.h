@@ -67,19 +67,20 @@ class Spaceship : public Actor
 public:
   Spaceship(StudentWorld* world, int image_id=IID_PLAYER_SHIP, int start_x=15, int start_y=1, int health=50);
   virtual void do_something(void);
-  void update_health(int how_much);               // Update health when spaceships either gain/lose health points
-  void update_torpedoes(unsigned int how_much);   // Update the number of torpedoes a spaceship currently has
-  void update_bullet_shoot(bool value);           // Update the state of whether the player fired a bullet on the previous tick
-  void update_torpedo_shoot(bool value);          // Update the state of whether the player fired a torpedo on the previous tick
-  int get_health(void) const;            // Returns the current health of the spaceship
-  unsigned int get_torpedoes(void) const;         // Returns the current torpedo count of the spaceship
-  bool get_bullet_shoot(void) const;              // Returns true if the player just fired a bullet on the previous tick
-  bool get_torpedo_shoot(void) const;             // Returns true if the player just fired a torpedo on the previous tick
+  void update_health(int how_much);         // Update health when spaceships either gain/lose health points
+  void update_torpedoes(int how_much);      // Update the number of torpedoes a spaceship currently has
+  void update_bullet_shoot(bool value);     // Update the state of whether the player fired a bullet on the previous tick
+  void update_torpedo_shoot(bool value);    // Update the state of whether the player fired a torpedo on the previous tick
+  int get_health(void) const;               // Returns the current health of the spaceship
+  int get_torpedoes(void) const;            // Returns the current torpedo count of the spaceship
+  bool get_bullet_shoot(void) const;        // Returns true if the player just fired a bullet on the previous tick
+  bool get_torpedo_shoot(void) const;       // Returns true if the player just fired a torpedo on the previous tick
+  void set_health(int value);               // Sets the health of the spaceship
   virtual ~Spaceship();
   
 private:
   int m_health;
-  unsigned int m_torpedoes;
+  int m_torpedoes;
   bool m_bullet_shoot;
   bool m_torpedo_shoot;
 };
@@ -100,6 +101,7 @@ public:
   };
   Nachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_NACHLING);
   virtual void do_something(void);
+  virtual bool is_wealthy(void) const;             // Returns true if the Nachling is wealthy
   virtual bool check_malfunctioning(void);         // For the WealthyNachling
   void update_horizontal_movement_remaining(int how_much); // Updates the horizontal steps the Nachling has left to take
   bool get_active(void) const;                     // Returns true if the Nachling can do something this tick
@@ -123,7 +125,6 @@ private:
   Direction m_horizontal_movement_direction;       // The horizontal direction that the Nachling will move in
 };
 
-
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------WEALTHY NACHLING--------------///////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -132,6 +133,7 @@ class WealthyNachling : public Nachling
 {
 public:
   WealthyNachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_WEALTHY_NACHLING);
+  virtual bool is_wealthy(void) const;          // Returns true if the Nachling is wealthy
   virtual bool check_malfunctioning(void);      // Check if the WealthyNachling is malfunctioning
   void update_resting_ticks(int how_much);      // Updates the number of resting ticks
   bool get_malfunctioning_state(void) const;    // Returns if the WealthyNachling is malfunctioning
@@ -166,14 +168,35 @@ private:
 class Goodie : public Actor
 {
 public:
-  Goodie(int start_x, int start_y, StudentWorld* world, int ticks);
+  Goodie(int image_id, int start_x, int start_y, StudentWorld* world);
   virtual void do_something(void);
-  void update_ticks(int how_much);                        // Increment/decrement the ticks before the goodie disappears
-  unsigned int get_ticks(void) const;                     // Returns the number of ticks a goodie has before it disappears
+  void update_ticks(int how_much);       // Increment/decrement the ticks before the goodie disappears
+  void update_active(int how_much);      // Decrements the count before the goodie can move down the space field
+  int get_total_ticks(void) const;       // Returns the total number of ticks a goodie can stay in the space field for a given round
+  int get_ticks(void) const;             // Returns the number of ticks a goodie has before it disappears
+  int get_active(void) const;            // Returns the current count of the countdown before goodie can move down
+  void set_total_ticks(int value);       // Sets the number of ticks a goodie can stay for a given round before disappearing
+  void set_ticks(int value);             // Sets the number of ticks before a goodie disappears
+  void set_active(int value);            // Resets the counter before the goodie can move down again
   virtual ~Goodie();
   
 private:
-  unsigned int m_nticks_before_disappear;
+  int m_total_ticks;             // The total number of ticks a goodie can stay in the field for a given round
+  int m_nticks_before_disappear; // The number of ticks left before the goodie disappears
+  int m_active;                  // A goodie can only move every n ticks (so as to move slowly down the space field)
+};
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////-----------FREE SHIP--------------//////////////////
+///////////////////////////////////////////////////////////////////////////
+
+class FreeShip : public Goodie
+{
+public:
+  FreeShip(int start_x, int start_y, StudentWorld* world);
+  virtual ~FreeShip();
+  
+private:
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -184,22 +207,7 @@ class Energy : public Goodie
 {
 public:
   Energy(int start_x, int start_y, StudentWorld* world);
-  virtual void do_something(void);
   virtual ~Energy();
-  
-private:
-};
-
-///////////////////////////////////////////////////////////////////////////
-//////////////////////-----------EXTRA LIVE--------------//////////////////
-///////////////////////////////////////////////////////////////////////////
-
-class ExtraLive : public Goodie
-{
-public:
-  ExtraLive(int start_x, int start_y, StudentWorld* world);
-  virtual void do_something(void);
-  virtual ~ExtraLive();
   
 private:
 };
@@ -208,12 +216,11 @@ private:
 /////////////////////-----------EXTRA TORPEDO--------------////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class ExtraTorpedo : public Goodie
+class FreeTorpedo : public Goodie
 {
 public:
-  ExtraTorpedo(int start_x, int start_y, StudentWorld* world);
-  virtual void do_something(void);
-  virtual ~ExtraTorpedo();
+  FreeTorpedo(int start_x, int start_y, StudentWorld* world);
+  virtual ~FreeTorpedo();
   
 private:
 };

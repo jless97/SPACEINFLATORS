@@ -60,7 +60,7 @@ public:
   int get_current_aliens_on_screen(void) const;  // Returns the number of aliens currently present in the space field
   int get_bullet_count(void) const;              // Returns the number of enemy bullets currently active in the space field
   // Checks if there were any collisions between actor objects
-  void check_collision(Actor* actor, bool is_player=true, bool is_alien=false, bool is_projectile=false);
+  void check_collision(Actor* actor, bool is_player=true, bool is_alien=false, bool is_projectile=false, bool is_goodie=false);
   bool in_line_with_player_spaceship(int x) const; // Returns true if the alien spaceship has the same x-coordinate as the player spaceship
   int get_player_spaceship_x_coord(void) const;  // Returns the x-coordinate of the player spaceship
   int get_player_spaceship_y_coord(void) const;  // Returns the y-coordinate of the player spaceship

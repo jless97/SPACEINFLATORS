@@ -33,10 +33,7 @@ GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asse
 StudentWorld::StudentWorld(std::string asset_dir)
 :GameWorld(asset_dir), m_round(1) {}
 
-StudentWorld::~StudentWorld()
-{
-  /// TODO: IMPLEMENT
-}
+StudentWorld::~StudentWorld() { clean_up(); }
 
 void StudentWorld::init(void)
 {
@@ -132,6 +129,7 @@ void StudentWorld::add_additional_actors(void) {
     // Add Nachling
     else
     {
+      //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
       new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
       update_current_aliens_on_screen(1);
     }
@@ -195,24 +193,22 @@ int StudentWorld::get_current_aliens_on_screen(void) const { return m_current_al
 
 int StudentWorld::get_bullet_count(void) const { return m_bullet_count; }
 
-void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile) {
+void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile, bool is_goodie) {
   for (int i = 0; i < m_actors.size(); i++)
   {
+    if (!m_actors[i]->is_alive()) { continue; } // To avoid doubling of one of the effects below (temporary fix)
     // Check if player spaceship collided with an alien spaceship or was hit by an alien projectile
     if (is_player)
     {
       // If collision with an alien spaceship
       if (m_actors[i]->get_id() == IID_NACHLING || m_actors[i]->get_id() == IID_WEALTHY_NACHLING || m_actors[i]->get_id() == IID_SMALLBOT)
       {
-        if (!m_actors[i]->is_alive()) { continue; }
         // Player Projectile
         if (is_projectile)
         {
           // Player projectile hit an alien spaceship
           if (actor->get_x() == m_actors[i]->get_x() && actor->get_y() == m_actors[i]->get_y())
           {
-            actor->set_dead();
-            play_sound(SOUND_ENEMY_HIT);
             dynamic_cast<Spaceship*>(m_actors[i])->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
             if (m_actors[i]->get_id() == IID_NACHLING)
             {
@@ -226,6 +222,8 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
             {
               if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1500); }
             }
+            actor->set_dead();
+            play_sound(SOUND_ENEMY_HIT);
           }
         }
         // Player spaceship
@@ -244,7 +242,6 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
       }
     }
   }
-  
   // Check if alien spaceship collided with the player spaceship or was hit by a player projectile
   if (is_alien)
   {
@@ -258,6 +255,20 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
         play_sound(SOUND_PLAYER_HIT);
         m_spaceship->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
       }
+    }
+  }
+  // Check if a goodie collided with the player spaceship, and if so update (per the specific goodie)
+  if (is_goodie)
+  {
+    if (actor->get_x() == m_spaceship->get_x() && actor->get_y() == m_spaceship->get_y())
+    {
+      actor->set_dead();
+      play_sound(SOUND_GOT_GOODIE);
+      increase_score(5000);
+      // If goodie is a free ship, then increase player score, and increase player's lives by 1
+      if (actor->get_id() == IID_FREE_SHIP_GOODIE) { inc_lives(); }
+      if (actor->get_id() == IID_ENERGY_GOODIE) { m_spaceship->set_health(50); }
+      if (actor->get_id() == IID_TORPEDO_GOODIE) { m_spaceship->update_torpedoes(5); }
     }
   }
 }
