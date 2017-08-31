@@ -45,8 +45,8 @@ public:
     
     /* Functions to be utilized by StudentWorld (and to update game) */
 	unsigned int get_lives() const { return m_lives; }
-	void decLives() { m_lives--; }
-	void incLives() { m_lives++; }
+	void dec_lives() { m_lives--; }
+	void inc_lives() { m_lives++; }
 	unsigned int get_score() const { return m_score; }
 	void increase_score(unsigned int how_much) { m_score += how_much; }
 

@@ -65,20 +65,20 @@ private:
 class Spaceship : public Actor
 {
 public:
-  Spaceship(StudentWorld* world, int image_id=IID_PLAYER_SHIP, int start_x=15, int start_y=1, unsigned int health=50);
+  Spaceship(StudentWorld* world, int image_id=IID_PLAYER_SHIP, int start_x=15, int start_y=1, int health=50);
   virtual void do_something(void);
-  void update_health(unsigned int how_much);      // Update health when spaceships either gain/lose health points
+  void update_health(int how_much);               // Update health when spaceships either gain/lose health points
   void update_torpedoes(unsigned int how_much);   // Update the number of torpedoes a spaceship currently has
   void update_bullet_shoot(bool value);           // Update the state of whether the player fired a bullet on the previous tick
   void update_torpedo_shoot(bool value);          // Update the state of whether the player fired a torpedo on the previous tick
-  unsigned int get_health(void) const;            // Returns the current health of the spaceship
+  int get_health(void) const;            // Returns the current health of the spaceship
   unsigned int get_torpedoes(void) const;         // Returns the current torpedo count of the spaceship
   bool get_bullet_shoot(void) const;              // Returns true if the player just fired a bullet on the previous tick
   bool get_torpedo_shoot(void) const;             // Returns true if the player just fired a torpedo on the previous tick
   virtual ~Spaceship();
   
 private:
-  unsigned int m_health;
+  int m_health;
   unsigned int m_torpedoes;
   bool m_bullet_shoot;
   bool m_torpedo_shoot;
@@ -91,7 +91,7 @@ private:
 class Nachling : public Spaceship
 {
 public:
-  Nachling(StudentWorld* world, int start_x, int start_y);
+  Nachling(StudentWorld* world, int start_x, int start_y, int health);
   virtual void do_something(void);
   virtual ~Nachling();
   
@@ -107,7 +107,7 @@ private:
 class WealthyNachling : public Nachling
 {
 public:
-  WealthyNachling(int start_x, int start_y, StudentWorld* world);
+  WealthyNachling(int start_x, int start_y, StudentWorld* world, int health);
   virtual void do_something(void);
   virtual ~WealthyNachling();
   
@@ -121,7 +121,7 @@ private:
 class Smallbot : public Spaceship
 {
 public:
-  Smallbot(int start_x, int start_y, StudentWorld* world);
+  Smallbot(int start_x, int start_y, StudentWorld* world, int health);
   virtual void do_something(void);
   virtual ~Smallbot();
   

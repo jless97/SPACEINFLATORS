@@ -64,7 +64,7 @@ Star::~Star() { set_visible(false); }
 ///////////////////////-----------SPACESHIP--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, unsigned int health)
+Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, int health)
 : Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(0), m_bullet_shoot(false), m_torpedo_shoot(false)
 { set_visible(true); }
 
@@ -89,8 +89,8 @@ void Spaceship::do_something(void)
     switch (user_input)
     {
       // Directional Input
-      case KEY_PRESS_UP: if (y <= VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_DOWN: if (y >= 0) { move_to(x, y - 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_UP: if (y < VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_DOWN: if (y > 0) { move_to(x, y - 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       case KEY_PRESS_LEFT: if (x > 0) { move_to(x - 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       case KEY_PRESS_RIGHT: if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
       // Projectile Input
@@ -134,7 +134,7 @@ void Spaceship::do_something(void)
   return;
 }
 
-void Spaceship::update_health(unsigned int how_much) { m_health += how_much; }
+void Spaceship::update_health(int how_much) { m_health += how_much; }
 
 void Spaceship::update_torpedoes(unsigned int how_much) { m_torpedoes += how_much; }
 
@@ -142,7 +142,7 @@ void Spaceship::update_bullet_shoot(bool value) { m_bullet_shoot = value; }
 
 void Spaceship::update_torpedo_shoot(bool value) { m_torpedo_shoot = value; }
 
-unsigned int Spaceship::get_health(void) const { return m_health; }
+int Spaceship::get_health(void) const { return m_health; }
 
 unsigned int Spaceship::get_torpedoes(void) const { return m_torpedoes; }
 
@@ -156,16 +156,25 @@ Spaceship::~Spaceship() { set_visible(false); }
 ////////////////////////-----------NACHLING--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-Nachling::Nachling(StudentWorld* world, int start_x, int start_y)
-: Spaceship(world, IID_NACHLING, start_x, start_y, (world->get_round() * 5)), m_state(0) { set_visible(true); world->add_actor(this); }
+Nachling::Nachling(StudentWorld* world, int start_x, int start_y, int health)
+: Spaceship(world, IID_NACHLING, start_x, start_y, health), m_state(0)
+{ set_visible(true); world->add_actor(this); }
 
 void Nachling::do_something(void)
 {
+  if (!is_alive()) { return; } // Check the current status of the Nachling
+  
+  StudentWorld* nachling_world = world(); // Grab a pointer to the StudentWorld
+  
+  // If the Nachling has lost all energy (i.e. health points), then remove the Nachling from the space field
+  if (get_health() <= 0) { set_dead(); nachling_world->play_sound(SOUND_ENEMY_DIE); }
+  
+  //int x = get_x(), y = get_y(); // Get currents coordinates of the Nachling
   
   return;
 }
 
-Nachling::~Nachling() { set_visible(false); }
+Nachling::~Nachling() { set_visible(false); world()->update_current_aliens_on_screen(-1); world()->update_aliens_left_this_round(-1); }
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------WEALTHY NACHLING--------------///////////////

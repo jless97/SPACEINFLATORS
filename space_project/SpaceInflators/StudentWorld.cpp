@@ -31,7 +31,7 @@ using namespace std;
 GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asset_dir); }
 
 StudentWorld::StudentWorld(std::string asset_dir)
-:GameWorld(asset_dir), m_round(0) {}
+:GameWorld(asset_dir), m_round(1) {}
 
 StudentWorld::~StudentWorld()
 {
@@ -42,14 +42,18 @@ void StudentWorld::init(void)
 {
   add_initial_actor(); // Add initial actors (i.e. player spaceship)
   
-  /// TODO: fix (just set to 1 for now)
-  set_alien_count(1); // Set the initial alien count to 0
-  
-  new Nachling(this, rand_int(0, 29), 39);
+  // Initial alien count setup for round 1 (subsequent updates take place in move())
+  set_round(get_round()); // Set the first round to 1
+  set_aliens_per_round(); // Sets the number of aliens to kill for round 0 (to advance to next round)
+  set_aliens_left_this_round(get_aliens_per_round()); // Sets the number of aliens left to kill for round 1
+  set_max_aliens_on_screen(); // Sets the max number of aliens that can be present on screen at any given time during round 1
+  set_current_aliens_on_screen(); // Upon initializing the game field, there are no aliens present in the space field
 }
 
 int StudentWorld::move(void)
 {
+  cout << "Aliens left to kill" << get_aliens_left_this_round() << endl;
+  
   add_additional_actors(); // Add additional actors (i.e. stars, aliens, goodies)
   
   update_scoreboard(); // Update the scoreboard display
@@ -68,9 +72,22 @@ int StudentWorld::move(void)
     else { it++; }
   }
   
-  if (!m_spaceship->is_alive()) { return GWSTATUS_PLAYER_DIED; }  // If player dies, then restart round (or end game if no lives remaining)
+  // If player dies, then restart round (or end game if no lives remaining)
+  if (!m_spaceship->is_alive())
+  {
+    dec_lives();
+    return GWSTATUS_PLAYER_DIED;
+  }
   
-  if (get_alien_count() <= 0) { update_round(); } // If the player killed all aliens, then advance to the next round
+  // If the player killed all aliens, then advance to the next round
+  if (get_aliens_left_this_round() <= 0)
+  {
+    update_round();
+    set_aliens_per_round(); // Sets the number of aliens to kill this rount to advance
+    set_aliens_left_this_round(get_aliens_per_round()); // Sets the aliens left to kill this round to the number of aliens to start round
+    set_max_aliens_on_screen(); // Sets the max number of aliens that can be present on screen at any given time
+    set_current_aliens_on_screen(); // Sets the current number of aliens present on screen to 0
+  }
   
   return GWSTATUS_CONTINUE_GAME;
 }
@@ -94,13 +111,37 @@ void StudentWorld::add_actor(Actor* actor) { m_actors.push_back(actor); }
 void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(this); }
 
 void StudentWorld::add_additional_actors(void) {
-  int N = 4 * get_round(); // Represents the number of aliens to add to the game field each round
-  int S = int(2 + 0.5 * get_round()); // Represents the number of aliens present at a given time in the game field
+  // If the number of aliens is greater than or equal to the number allowed per round, don't add more aliens
+  if (get_current_aliens_on_screen() >= get_max_aliens_on_screen()) { return; }
   
-  if (get_alien_count() >= S) {} // If the number of aliens is greater than or equal to the number allowed per round, don't add more
-  //else { int V = get_alien_count() -
+  // If the number of aliens left to be killed this round are all present on screen, don't add more aliens
+  if (get_aliens_left_this_round() <= get_current_aliens_on_screen()) { return; }
   
-  // Generate star objects at random x coordinates in the star field
+  // If passed previous checks, then add a specific type of alien spaceship to the space field
+    // Add a type of Nachling
+  if (rand_int(1, 10) < 7)
+  {
+    // Add Wealthy Nachling
+    if (rand_int(1, 10) < 2)
+    {
+      /// TODO: Add Wealthy Nachling
+      /// Energy of Wealthy Nachling => int E = 8 * get_round();
+    }
+    // Add Nachling
+    else
+    {
+      new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
+      update_current_aliens_on_screen(1);
+    }
+  }
+    // Add a Smallbot
+  else
+  {
+    /// TODO: Add a smallbot
+    /// Energy of Smallbot => int E = 12 * get_round();
+  }
+  
+  // Generate star objects at random x coordinates in the space field
   if (rand_int(1, 3) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
 }
 
@@ -125,15 +166,29 @@ void StudentWorld::update_scoreboard(void) {
 
 void StudentWorld::update_round(void) { m_round++; }
 
-void StudentWorld::update_alien_count(void) { m_alien_count--; }
+void StudentWorld::update_aliens_left_this_round(int how_much) { m_aliens_left_this_round += how_much; }
+
+void StudentWorld::update_current_aliens_on_screen(int how_much) { m_current_aliens_on_screen += how_much; }
 
 void StudentWorld::set_round(unsigned int value) { m_round = value; }
 
-void StudentWorld::set_alien_count(unsigned int value) { m_alien_count = value; }
+void StudentWorld::set_aliens_per_round(void) { m_aliens_per_round = 4 * get_round(); }
+
+void StudentWorld::set_aliens_left_this_round(int value) { m_aliens_left_this_round = value; }
+
+void StudentWorld::set_max_aliens_on_screen(void) { m_max_aliens_on_screen = int(2 + 0.5 * get_round()); }
+
+void StudentWorld::set_current_aliens_on_screen(void) { m_current_aliens_on_screen = 0; }
 
 unsigned int StudentWorld::get_round(void) const { return m_round; }
 
-unsigned int StudentWorld::get_alien_count(void) const { return m_alien_count; }
+int StudentWorld::get_aliens_per_round(void) const { return m_aliens_per_round; }
+
+int StudentWorld::get_aliens_left_this_round(void) const { return m_aliens_left_this_round; }
+
+int StudentWorld::get_max_aliens_on_screen(void) const { return m_max_aliens_on_screen; }
+
+int StudentWorld::get_current_aliens_on_screen(void) const { return m_current_aliens_on_screen; }
 
 void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile) {
   for (int i = 0; i < m_actors.size(); i++)
@@ -152,7 +207,19 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
           {
             actor->set_dead();
             play_sound(SOUND_ENEMY_HIT);
-            dynamic_cast<Spaceship*>(m_actors[i])->update_health(dynamic_cast<SepticBullet*>(actor)->get_attack_power());
+            dynamic_cast<Spaceship*>(m_actors[i])->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
+            if (m_actors[i]->get_id() == IID_NACHLING)
+            {
+              if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1000); }
+            }
+            else if (m_actors[i]->get_id() == IID_WEALTHY_NACHLING)
+            {
+              if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1200); }
+            }
+            else
+            {
+              if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1500); }
+            }
           }
         }
         // Player spaceship
@@ -164,8 +231,8 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
             m_actors[i]->set_dead();
             play_sound(SOUND_ENEMY_PLAYER_COLLISION);
             m_spaceship->update_health(-15);
+            update_aliens_left_this_round(1); // Collision kills never count towards the number of destroyed aliens required to end the round
             /// TODO: This will never result in Alien dropping goodie (IMPLEMENT)
-            /// TODO: This will never count towards the number of destroyed aliens required to complete the current round
           }
         }
       }
