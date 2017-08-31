@@ -194,99 +194,107 @@ void Nachling::do_something(void)
   
   if (!get_active()) { set_active(true); return; } // Nachling can't do something this tick, allow it to do something next tick, and return
   
-  // If in state 0
-  if (get_state() == 0)
+  // If a smallbot, do the smallbot algorithm
+  if (is_smallbot()) { do_smallbot_movement(); }
+  // If a Nachling or Wealthy Nachling, do certain algorithm based off of the Nachling's state
+  else
   {
-    // If Nachling is in line with the player spaceship, and Nachling isn't in far-left or far-right column
-    if (nachling_world->in_line_with_player_spaceship(x) && (x != 0) && (x != VIEW_WIDTH - 1))
+    switch(get_state())
     {
-      set_state(1); // Set Nachling state to 1
-      // Set the Horizontal Movement Distance that the Nachling will move in a given direction
-      unsigned int current_mdb = compute_mdb(x); // Compute the Nachling's Minimum Distance to a border (i.e. x = 0, or x = 29)
-      if (current_mdb > 3) { set_horizontal_movement_distance(nachling_world->rand_int(1, 3)); }
-      else { set_horizontal_movement_distance(current_mdb); }
-      // Set the Horizontal Movement Direction that the Nachling will move in
-      if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Nachling::Direction::left); }
-      else { set_horizontal_movement_direction(Nachling::Direction::right); }
-      // Set the Horizontal Movement Remaining steps that the Nachling will take in the direction just calculated
-      set_horizontal_movement_remaining(get_horizontal_movement_distance());
-      move_to(x, y - 1);
+      case 0:
+        // If Nachling is in line with the player spaceship, and Nachling isn't in far-left or far-right column
+        if (nachling_world->in_line_with_player_spaceship(x) && (x != 0) && (x != VIEW_WIDTH - 1))
+        {
+          set_state(1); // Set Nachling state to 1
+          // Set the Horizontal Movement Distance that the Nachling will move in a given direction
+          unsigned int current_mdb = compute_mdb(x); // Compute the Nachling's Minimum Distance to a border (i.e. x = 0, or x = 29)
+          if (current_mdb > 3) { set_horizontal_movement_distance(nachling_world->rand_int(1, 3)); }
+          else { set_horizontal_movement_distance(current_mdb); }
+          // Set the Horizontal Movement Direction that the Nachling will move in
+          if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Direction::left); }
+          else { set_horizontal_movement_direction(Direction::right); }
+          // Set the Horizontal Movement Remaining steps that the Nachling will take in the direction just calculated
+          set_horizontal_movement_remaining(get_horizontal_movement_distance());
+          move_to(x, y - 1);
+        }
+        // If Nachling is to the left or to the right of the player spaceship
+        else if (nachling_world->rand_int(1, 3) == 1)
+        {
+          // If Nachling is to the left of the player spaceship, move diagonal right-down, don't allow movement next tick, instantly return
+          if (x < nachling_world->get_player_spaceship_x_coord())
+          { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y - 1); set_active(false); return; } }
+          // If Nacling is to the right of the player spaceship, move diagonal left-down, don't allow movement next tick, instantly return
+          else if (x > nachling_world->get_player_spaceship_x_coord())
+          { if (x > 0) { move_to(x - 1, y - 1); set_active(false); return; } }
+        }
+        else { move_to(x, y - 1); }
+        // Check if the Nachling went below the bottom of the space field, if so remove Nachling from space field
+        if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
+        set_active(false); return;
+        break;
+      case 1:
+        if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); } //set_active(false); return; }
+        if (get_horizontal_movement_remaining() == 0)
+        {
+          // Flip the current horizontal direction of the Nachling
+          if (get_horizontal_movement_distance() == Direction::left) { set_horizontal_movement_direction(Direction::right); }
+          else { set_horizontal_movement_direction(Direction::left); }
+          // Set HMR to double the HMD computed in state 0
+          set_horizontal_movement_remaining(2 * get_horizontal_movement_distance());
+        }
+        else { update_horizontal_movement_remaining(-1); }
+        // Move 1 step in the current horizontal direction
+        if (get_horizontal_movement_direction() == Direction::right)
+        { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } }
+        else { if (x > 0) { move_to(x - 1, y); } }
+        // Compute the change the Nachling will fire a projectile
+        if (nachling_world->rand_int(0, (BASE_CHANCE_OF_FIRING / nachling_world->get_round())) == 0)
+        {
+          // Fire a SepticBullet
+          if (nachling_world->get_bullet_count() < (2 * nachling_world->get_round()))
+          {
+            if (y > nachling_world->get_player_spaceship_y_coord()) { new SepticBullet(x, y - 1, nachling_world, false); }
+          }
+        }
+        if (nachling_world->rand_int(1, 20) == 1) { set_state(2); }
+        set_active(false); return;
+        break;
+      case 2:
+        if (y == VIEW_HEIGHT - 1) { set_state(0); set_active(false); return; } // If at the top of the screen, set state to 0, and return
+        // If at the far left of the screen, move diagonal up-right
+        if (x == 0)
+        {
+          set_horizontal_movement_direction(Direction::right);
+          move_to(x + 1, y + 1);
+        }
+        // If at the far right of the screen, move diagonal up-left
+        else if (x == VIEW_WIDTH - 1)
+        {
+          set_horizontal_movement_direction(Direction::left);
+          move_to(x - 1, y + 1);
+        }
+        // Else compute random horizontal direction, move diagonal up-direction
+        else
+        {
+          if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Direction::left); move_to(x - 1, y + 1); }
+          else { set_horizontal_movement_direction(Direction::right); move_to(x + 1, y + 1); }
+        }
+        set_active(false); return;
+        break;
+      default:
+        set_active(false); // After doing something this tick, don't allow Nachling to do something next tick'
+        break;
     }
-    // If Nachling is to the left or to the right of the player spaceship
-    else if (nachling_world->rand_int(1, 3) == 1)
-    {
-      // If Nachling is to the left of the player spaceship, move diagonal right-down, don't allow movement next tick, instantly return
-      if (x < nachling_world->get_player_spaceship_x_coord())
-      { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y - 1); set_active(false); return; } }
-      // If Nacling is to the right of the player spaceship, move diagonal left-down, don't allow movement next tick, instantly return
-      else if (x > nachling_world->get_player_spaceship_x_coord())
-      { if (x > 0) { move_to(x - 1, y - 1); set_active(false); return; } }
-    }
-    else { move_to(x, y - 1); }
-    // Check if the Nachling went below the bottom of the space field, if so remove Nachling from space field
-    if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
-    set_active(false); return;
   }
-  // If in state 1
-  else if (get_state() == 1)
-  {
-    if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); } //set_active(false); return; }
-    if (get_horizontal_movement_remaining() == 0)
-    {
-      // Flip the current horizontal direction of the Nachling
-      if (get_horizontal_movement_distance() == Nachling::Direction::left) { set_horizontal_movement_direction(Nachling::Direction::right); }
-      else { set_horizontal_movement_direction(Nachling::Direction::left); }
-      // Set HMR to double the HMD computed in state 0
-      set_horizontal_movement_remaining(2 * get_horizontal_movement_distance());
-    }
-    else { update_horizontal_movement_remaining(-1); }
-    // Move 1 step in the current horizontal direction
-    if (get_horizontal_movement_direction() == Nachling::Direction::right)
-    { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } }
-    else { if (x > 0) { move_to(x - 1, y); } }
-    // Compute the change the Nachling will fire a projectile
-    if (nachling_world->rand_int(0, (BASE_CHANCE_OF_FIRING / nachling_world->get_round())) == 0)
-    {
-      // Fire a SepticBullet
-      if (nachling_world->get_bullet_count() < (2 * nachling_world->get_round()))
-      {
-        if (y > nachling_world->get_player_spaceship_y_coord()) { new SepticBullet(x, y - 1, nachling_world, false); }
-      }
-    }
-    if (nachling_world->rand_int(1, 20) == 1) { set_state(2); }
-    set_active(false); return;
-  }
-  // If in state 2
-  else if (get_state() == 2)
-  {
-    if (y == VIEW_HEIGHT - 1) { set_state(0); set_active(false); return; } // If at the top of the screen, set state to 0, and return
-    // If at the far left of the screen, move diagonal up-right
-    if (x == 0)
-    {
-      set_horizontal_movement_direction(Nachling::Direction::right);
-      move_to(x + 1, y + 1);
-    }
-    // If at the far right of the screen, move diagonal up-left
-    else if (x == VIEW_WIDTH - 1)
-    {
-      set_horizontal_movement_direction(Nachling::Direction::left);
-      move_to(x - 1, y + 1);
-    }
-    // Else compute random horizontal direction, move diagonal up-direction
-    else
-    {
-      if (nachling_world->rand_int(1, 2) == 1) { set_horizontal_movement_direction(Nachling::Direction::left); move_to(x - 1, y + 1); }
-      else { set_horizontal_movement_direction(Nachling::Direction::right); move_to(x + 1, y + 1); }
-    }
-    set_active(false); return;
-  }
-  
-  set_active(false); // After doing something this tick, don't allow Nachling to do something next tick'
   
   return;
 }
 
 bool Nachling::is_wealthy(void) const { return false; }
+
+bool Nachling::is_smallbot(void) const { return false; }
+
+void Nachling::do_smallbot_movement(void) {}
 
 bool Nachling::check_malfunctioning(void) { return false; }
 
@@ -320,7 +328,7 @@ unsigned int Nachling::compute_mdb(int x) const
   return (world()->min(distance_to_left_border, distance_to_right_border));
 }
 
-Nachling::~Nachling() { set_visible(false); world()->update_current_aliens_on_screen(-1); world()->update_aliens_left_this_round(-1); }
+Nachling::~Nachling() { world()->update_current_aliens_on_screen(-1); world()->update_aliens_left_this_round(-1); }
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////-----------WEALTHY NACHLING--------------///////////////
@@ -330,6 +338,10 @@ WealthyNachling::WealthyNachling(StudentWorld* world, int start_x, int start_y, 
 : Nachling(world, start_x, start_y, health, image_id), m_malfunctioning_state(false), m_resting_ticks(1) {}
 
 bool WealthyNachling::is_wealthy(void) const { return true; }
+
+bool WealthyNachling::is_smallbot(void) const { return false; }
+
+void WealthyNachling::do_smallbot_movement(void) {}
 
 bool WealthyNachling::check_malfunctioning(void)
 {
@@ -359,6 +371,61 @@ WealthyNachling::~WealthyNachling() {}
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------SMALLBOT--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
+
+Smallbot::Smallbot(StudentWorld* world, int start_x, int start_y, int health, int image_id)
+: Nachling(world, start_x, start_y, health, image_id), m_hit_by_player(false) {}
+
+bool Smallbot::is_wealthy(void) const { return false; }
+
+bool Smallbot::is_smallbot(void) const { return true; }
+
+void Smallbot::do_smallbot_movement(void) 
+{
+  int x = get_x(), y = get_y(); // Get the current coordinates of the Smallbot
+  
+  StudentWorld* smallbot_world = world(); // Grab a pointer to StudentWorld
+  
+  // If the Smallbot was just hit by the player, then adjust x-coordinate as it moves down
+  if (get_hit_by_player_status())
+  {
+    set_hit_by_player_status(false); // Reset this status
+    
+    if (x == 0) { move_to(x + 1, y - 1); }
+    if (x == 29) { move_to(x - 1, y - 1); }
+    else
+    {
+      if (smallbot_world->rand_int(1, 2) == 1) { move_to(x + 1, y - 1); }
+      else { move_to(x - 1, y - 1); }
+    }
+  }
+  else { move_to(x, y - 1); } // If the Smallbot was not just attacked, then just adjust the y-coordinate only
+  
+  // If the Smallbot is in line with the player spaceship (and above), then decide if it should fire a projectile
+  if (smallbot_world->in_line_with_player_spaceship(x) && (smallbot_world->get_player_spaceship_x_coord() < x))
+  {
+    // Fire a torpedo
+    if (smallbot_world->rand_int(1, (100 / smallbot_world->get_round())) == 1)
+    {
+      new FlatulenceTorpedo(x, y - 1, smallbot_world, false);
+    }
+    // Fire a bullet
+    else
+    {
+      if (smallbot_world->get_bullet_count() < (2 * smallbot_world->get_round())) { new SepticBullet(x, y - 1, smallbot_world, false); }
+    }
+  }
+  
+  // If Smallbot goes below the space field, then remove it from the space field
+  if (y < 0) { set_dead(); smallbot_world->update_aliens_left_this_round(1); }
+  
+  return;
+}
+
+bool Smallbot::get_hit_by_player_status(void) const { return m_hit_by_player; }
+
+void Smallbot::set_hit_by_player_status(bool value) { m_hit_by_player = value; }
+
+Smallbot::~Smallbot() {}
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------GOODIE--------------///////////////////

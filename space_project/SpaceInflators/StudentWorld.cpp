@@ -137,8 +137,8 @@ void StudentWorld::add_additional_actors(void) {
     // Add a Smallbot
   else
   {
-    /// TODO: Add a smallbot
-    /// Energy of Smallbot => int E = 12 * get_round();
+    new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
+    update_current_aliens_on_screen(1);
   }
 }
 
@@ -212,6 +212,7 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
             dynamic_cast<Spaceship*>(m_actors[i])->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
             if (m_actors[i]->get_id() == IID_NACHLING)
             {
+              //dynamic_cast<Smallbot*>(m_actors[i])->set_hit_by_player_status(true); // Inform the Smallbot object it was just hit
               if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1000); }
             }
             else if (m_actors[i]->get_id() == IID_WEALTHY_NACHLING)

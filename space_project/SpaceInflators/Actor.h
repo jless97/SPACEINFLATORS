@@ -102,7 +102,9 @@ public:
   Nachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_NACHLING);
   virtual void do_something(void);
   virtual bool is_wealthy(void) const;             // Returns true if the Nachling is wealthy
+  virtual bool is_smallbot(void) const;            // Returns true if the alien is a Smallbot
   virtual bool check_malfunctioning(void);         // For the WealthyNachling
+  virtual void do_smallbot_movement(void);      // Implements the Smallbot movement algorithm
   void update_horizontal_movement_remaining(int how_much); // Updates the horizontal steps the Nachling has left to take
   bool get_active(void) const;                     // Returns true if the Nachling can do something this tick
   unsigned int get_state(void) const;              // Returns the current state of the Nachling
@@ -134,7 +136,9 @@ class WealthyNachling : public Nachling
 public:
   WealthyNachling(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_WEALTHY_NACHLING);
   virtual bool is_wealthy(void) const;          // Returns true if the Nachling is wealthy
+  virtual bool is_smallbot(void) const;         // Returns true if the alien is a Smallbot
   virtual bool check_malfunctioning(void);      // Check if the WealthyNachling is malfunctioning
+  virtual void do_smallbot_movement(void);      // Implements the Smallbot movement algorithm
   void update_resting_ticks(int how_much);      // Updates the number of resting ticks
   bool get_malfunctioning_state(void) const;    // Returns if the WealthyNachling is malfunctioning
   int get_resting_ticks(void) const;            // Returns the number of resting ticks
@@ -151,14 +155,19 @@ private:
 ////////////////////////-----------SMALLBOT--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-class Smallbot : public Spaceship
+class Smallbot : public Nachling
 {
 public:
-  Smallbot(int start_x, int start_y, StudentWorld* world, int health);
-  virtual void do_something(void);
+  Smallbot(StudentWorld* world, int start_x, int start_y, int health, int image_id=IID_SMALLBOT);
+  virtual bool is_wealthy(void) const;          // Returns true if the Nachling is wealthy
+  virtual bool is_smallbot(void) const;         // Returns true if the alien is a Smallbot
+  virtual void do_smallbot_movement(void);      // Implements the Smallbot movement algorithm
+  bool get_hit_by_player_status(void) const;    // Returns if the Smallbot was just hit by a player projectile
+  void set_hit_by_player_status(bool value);    // Sets the status if the Smallbot was hit by a player projectile
   virtual ~Smallbot();
   
 private:
+  bool m_hit_by_player;   // Tells the Smallbot if it was just hit by a player projectile
 };
 
 ///////////////////////////////////////////////////////////////////////////
