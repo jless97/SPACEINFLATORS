@@ -65,7 +65,7 @@ Star::~Star() {}
 ///////////////////////////////////////////////////////////////////////////
 
 Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, int health)
-: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(0), m_bullet_shoot(false) { set_visible(true); }
+: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(10), m_bullet_shoot(false) { set_visible(true); }
 
 void Spaceship::do_something(void)
 {
@@ -177,7 +177,7 @@ void Nachling::do_something(void)
     // If a Smallbot, then perhaps drop a Free Ship goodie
     if (is_smallbot())
     {
-      if (nachling_world->rand_int(1, 3) == 1) { new FreeShip(x, y, nachling_world); } // Add a FreeShip goodie to the space field
+      if (nachling_world->rand_int(1, 20) == 1) { new FreeShip(x, y, nachling_world); } // Add a FreeShip goodie to the space field
     }
     set_dead();
     nachling_world->play_sound(SOUND_ENEMY_DIE);
@@ -224,11 +224,11 @@ void Nachling::do_something(void)
         if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
         break;
       case 1:
-        if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); } //set_active(false); return; }
+        if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); }
         if (get_horizontal_movement_remaining() == 0)
         {
           // Flip the current horizontal direction of the Nachling
-          if (get_horizontal_movement_distance() == Direction::left) { set_horizontal_movement_direction(Direction::right); }
+          if (get_horizontal_movement_direction() == Direction::left) { set_horizontal_movement_direction(Direction::right); }
           else { set_horizontal_movement_direction(Direction::left); }
           // Set HMR to double the HMD computed in state 0
           set_horizontal_movement_remaining(2 * get_horizontal_movement_distance());
@@ -549,6 +549,6 @@ SepticBullet::~SepticBullet() { if (!get_projectile_viewpoint()) { world()->upda
 ///////////////////////////////////////////////////////////////////////////
 
 FlatulenceTorpedo::FlatulenceTorpedo(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet)
-: SepticBullet(start_x, start_y, world, player_spaceship_bullet, IID_TORPEDO) { set_attack_power(8); }
+: SepticBullet(start_x, start_y, world, player_spaceship_bullet, IID_TORPEDO) { set_attack_power(6 * world->get_round()); }
 
 FlatulenceTorpedo::~FlatulenceTorpedo() {}

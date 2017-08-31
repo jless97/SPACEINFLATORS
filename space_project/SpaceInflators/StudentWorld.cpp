@@ -54,6 +54,10 @@ int StudentWorld::move(void)
   
   update_scoreboard(); // Update the scoreboard display
   
+  // Simple new feature (every 5 rounds, add 10 torpedoes to the player's inventory)
+  static unsigned int multiple = 1;
+  if (get_round() >= (BONUS_TORPEDOES * multiple)) { m_spaceship->update_torpedoes(10); multiple++; }
+  
   m_spaceship->do_something(); // Ask the player spaceship to do something this tick
   
   // Ask each actor in the game to do something this tick
@@ -125,14 +129,11 @@ void StudentWorld::add_additional_actors(void) {
     {
       new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
       update_current_aliens_on_screen(1);
-      //new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
     }
     // Add Nachling
     else
     {
-      //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
       new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
-      //new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
       update_current_aliens_on_screen(1);
     }
   }
@@ -140,7 +141,6 @@ void StudentWorld::add_additional_actors(void) {
   else
   {
     new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
-    //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
     update_current_aliens_on_screen(1);
   }
 }
@@ -149,7 +149,8 @@ void StudentWorld::update_scoreboard(void) {
   // Update scoreboard fields
   unsigned int score = get_score();
   unsigned int round = get_round();
-  unsigned int energy = m_spaceship->get_health();
+  int energy = m_spaceship->get_health();
+  if (energy < 0) { energy = 0; }
   unsigned int torpedoes = m_spaceship->get_torpedoes();
   unsigned int ships = get_lives();
   // Convert scoreboard fields to strings
@@ -257,7 +258,10 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
       {
         actor->set_dead();
         play_sound(SOUND_PLAYER_HIT);
-        m_spaceship->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
+        // I wanted to add the torpedo to kill alien ships on contact, but only deal the normal damage of 8 to the player spaceship
+        if (actor->get_id() == IID_BULLET) { m_spaceship->update_health(-2); }
+        else { m_spaceship->update_health(-8); }
+        //m_spaceship->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
       }
     }
   }
