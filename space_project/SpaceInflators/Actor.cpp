@@ -260,7 +260,7 @@ void Nachling::do_something(void)
         }
         if (nachling_world->rand_int(1, 20) == 1) { set_state(2); }
         break;
-      case 2:
+      case 2: 
         if (y == VIEW_HEIGHT - 1) { set_state(0); return; } // If at the top of the screen, set state to 0, and return
         // If at the far left of the screen, move diagonal up-right
         if (x == 0)
