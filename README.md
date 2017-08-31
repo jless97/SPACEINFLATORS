@@ -26,6 +26,12 @@ Smallberg (with use of the GLUT and irrKlang Libraries).
 game, but exploit the game engine and graphics APIs provided by
 the Professor (displayed using XQuartz).
 
+## Game Rules
+The game is configured in rounds, where the player can advance to the next round by killing a given number 
+of alien spaceships for that given round (with a projectile, colliding with them, doesn't go to this total).
+The player starts out with 30 torpedoes, with 10 torpedoes being awarded every 5 rounds. But, don't be 
+fooled. Players should use their torpedoes wisely to kill the "correct" alien spaceships to reap the rewards.
+
 ## Built With
 * IDE: Xcode
 * Language: C++ 
