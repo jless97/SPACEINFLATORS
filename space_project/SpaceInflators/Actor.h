@@ -70,11 +70,9 @@ public:
   void update_health(int how_much);         // Update health when spaceships either gain/lose health points
   void update_torpedoes(int how_much);      // Update the number of torpedoes a spaceship currently has
   void update_bullet_shoot(bool value);     // Update the state of whether the player fired a bullet on the previous tick
-  void update_torpedo_shoot(bool value);    // Update the state of whether the player fired a torpedo on the previous tick
   int get_health(void) const;               // Returns the current health of the spaceship
   int get_torpedoes(void) const;            // Returns the current torpedo count of the spaceship
   bool get_bullet_shoot(void) const;        // Returns true if the player just fired a bullet on the previous tick
-  bool get_torpedo_shoot(void) const;       // Returns true if the player just fired a torpedo on the previous tick
   void set_health(int value);               // Sets the health of the spaceship
   virtual ~Spaceship();
   
@@ -82,7 +80,6 @@ private:
   int m_health;
   int m_torpedoes;
   bool m_bullet_shoot;
-  bool m_torpedo_shoot;
 };
 
 ///////////////////////////////////////////////////////////////////////////

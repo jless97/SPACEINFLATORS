@@ -30,7 +30,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////
 
 Actor::Actor(int image_id, int start_x, int start_y, StudentWorld* world)
-: GraphObject(image_id, start_x, start_y), m_world(world), m_alive(true) { set_visible(false); }
+: GraphObject(image_id, start_x, start_y), m_world(world), m_alive(true) { set_visible(true); }
 
 StudentWorld* Actor::world(void) const { return m_world; }
 
@@ -38,14 +38,14 @@ void Actor::set_dead(void) { m_alive = false; }
 
 bool Actor::is_alive(void) const { return m_alive == true; }
 
-Actor::~Actor() {}
+Actor::~Actor() { set_visible(false); }
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------STAR--------------/////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
 Star::Star(int start_x, int start_y, StudentWorld* world)
-: Actor(IID_STAR, start_x, start_y, world) { set_visible(true); world->add_actor(this); }
+: Actor(IID_STAR, start_x, start_y, world) { world->add_actor(this); }
 
 void Star::do_something(void)
 {
@@ -58,15 +58,14 @@ void Star::do_something(void)
   move_to(x, y - 1); // If the star object is in a valid position, move one step down the game field
 }
 
-Star::~Star() { set_visible(false); }
+Star::~Star() {}
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////-----------SPACESHIP--------------//////////////////
 ///////////////////////////////////////////////////////////////////////////
 
 Spaceship::Spaceship(StudentWorld* world, int image_id, int start_x, int start_y, int health)
-: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(0), m_bullet_shoot(false), m_torpedo_shoot(false)
-{ set_visible(true); }
+: Actor(image_id, start_x, start_y, world), m_health(health), m_torpedoes(0), m_bullet_shoot(false) { set_visible(true); }
 
 void Spaceship::do_something(void)
 {
@@ -89,10 +88,10 @@ void Spaceship::do_something(void)
     switch (user_input)
     {
       // Directional Input
-      case KEY_PRESS_UP: if (y < VIEW_HEIGHT - 1) { move_to(x, y + 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_DOWN: if (y > 0) { move_to(x, y - 1); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_LEFT: if (x > 0) { move_to(x - 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
-      case KEY_PRESS_RIGHT: if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } update_bullet_shoot(false); update_torpedo_shoot(false); break;
+      case KEY_PRESS_UP: if (y < VIEW_HEIGHT - 1) { move_to(x, y + 1); } /*update_bullet_shoot(false); update_torpedo_shoot(false);*/ break;
+      case KEY_PRESS_DOWN: if (y > 0) { move_to(x, y - 1); } /*update_bullet_shoot(false); */ break;
+      case KEY_PRESS_LEFT: if (x > 0) { move_to(x - 1, y); } /*update_bullet_shoot(false);*/ break;
+      case KEY_PRESS_RIGHT: if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } /*update_bullet_shoot(false); */ break;
       // Projectile Input
       case KEY_PRESS_SPACE:
         if (get_bullet_shoot()) { update_bullet_shoot(false); return; } // If player fired bullet previous tick, can't fire this tick
@@ -103,22 +102,16 @@ void Spaceship::do_something(void)
           spaceship_world->play_sound(SOUND_PLAYER_FIRE);
           new SepticBullet(x, y + 1, spaceship_world, true);
         }
-        update_torpedo_shoot(false);
+        //update_torpedo_shoot(false);
         break;
       case KEY_PRESS_TAB:
-        if (get_torpedo_shoot()) { update_torpedo_shoot(false); return; } // If player fired torpedo previous tick, can't fire this tick
-        // Else, add new FlatulenceTorpedo to the space field, play sound, and set state to indicate a torpedo was just fired
-        else
+        if (get_torpedoes() >= 1)
         {
-          if (get_torpedoes() >= 1)
-          {
-            update_torpedo_shoot(true);
-            update_torpedoes(-1);
-            spaceship_world->play_sound(SOUND_PLAYER_TORPEDO);
-            new FlatulenceTorpedo(x, y + 1, spaceship_world, true);
-          }
+          update_torpedoes(-1);
+          spaceship_world->play_sound(SOUND_PLAYER_TORPEDO);
+          new FlatulenceTorpedo(x, y + 1, spaceship_world, true);
         }
-        update_bullet_shoot(false);
+        //update_bullet_shoot(false);
         break;
       default:
         break;
@@ -140,19 +133,15 @@ void Spaceship::update_torpedoes(int how_much) { m_torpedoes += how_much; }
 
 void Spaceship::update_bullet_shoot(bool value) { m_bullet_shoot = value; }
 
-void Spaceship::update_torpedo_shoot(bool value) { m_torpedo_shoot = value; }
-
 int Spaceship::get_health(void) const { return m_health; }
 
 int Spaceship::get_torpedoes(void) const { return m_torpedoes; }
 
 bool Spaceship::get_bullet_shoot(void) const { return m_bullet_shoot; }
 
-bool Spaceship::get_torpedo_shoot(void) const { return m_torpedo_shoot; }
-
 void Spaceship::set_health(int value) { m_health = value; }
 
-Spaceship::~Spaceship() { set_visible(false); }
+Spaceship::~Spaceship() {}
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////-----------NACHLING--------------//////////////////
@@ -160,7 +149,7 @@ Spaceship::~Spaceship() { set_visible(false); }
 
 Nachling::Nachling(StudentWorld* world, int start_x, int start_y, int health, int image_id)
 : Spaceship(world, image_id, start_x, start_y, health), m_active(true), m_state(0), m_horizontal_movement_distance(0), m_horizontal_movement_remaining(0), m_horizontal_movement_direction(Direction::none)
-{ set_visible(true); world->add_actor(this); }
+{ world->add_actor(this); }
 
 void Nachling::do_something(void)
 {
@@ -398,9 +387,9 @@ void Smallbot::do_smallbot_movement(void)
     }
   }
   else { move_to(x, y - 1); } // If the Smallbot was not just attacked, then just adjust the y-coordinate only
-  
+
   // If the Smallbot is in line with the player spaceship (and above), then decide if it should fire a projectile
-  if (smallbot_world->in_line_with_player_spaceship(x) && (smallbot_world->get_player_spaceship_x_coord() < x))
+  if (smallbot_world->in_line_with_player_spaceship(x) && (smallbot_world->get_player_spaceship_y_coord() < y))
   {
     // Fire a torpedo
     if (smallbot_world->rand_int(1, (100 / smallbot_world->get_round())) == 1)
@@ -432,7 +421,7 @@ Smallbot::~Smallbot() {}
 
 Goodie::Goodie(int image_id, int start_x, int start_y, StudentWorld* world)
 : Actor(image_id, start_x, start_y, world), m_active(3)
-{ set_visible(true); world->add_actor(this); set_total_ticks((100 / world->get_round() + 30)); set_ticks((100 / world->get_round() + 30)); }
+{ world->add_actor(this); set_total_ticks((100 / world->get_round() + 30)); set_ticks((100 / world->get_round() + 30)); }
 
 void Goodie::do_something(void)
 {
@@ -445,13 +434,15 @@ void Goodie::do_something(void)
   int x = get_x(), y = get_y(); // Get current Free Ship coordinates
   
   free_world->check_collision(this, false, false, false, true); // Check if the player spaceship picked up the goodie
-  
+  if (!is_alive()) { return; } // Check the current status of the Free Ship goodie
+
   set_brightness((get_ticks() / get_total_ticks()) + 0.2); // As the goodie remains on the field, it begins to dim as it's time ticks away
   
   if (get_active() <= 0) { set_active(3); move_to(x, y - 1); } // If the goodie can move this turn, move down one, and reset counter
   
   free_world->check_collision(this, false, false, false, true); // Check if the player spaceship picked up the goodie (after moving down)
-  
+  if (!is_alive()) { return; } // Check the current status of the Free Ship goodie
+
   if (y < 0) { set_dead(); } // If the goodie moved below the space field, then remove it from the game
   
   update_active(-1); // Update the counter before the goodie can move down the space field
@@ -474,7 +465,7 @@ void Goodie::set_ticks(int value) { m_nticks_before_disappear = value; }
 
 void Goodie::set_active(int value) { m_active = value; }
 
-Goodie::~Goodie() { set_visible(false); }
+Goodie::~Goodie() {}
 
 ///////////////////////////////////////////////////////////////////////////
 //////////////////////-----------FREE SHIP--------------///////////////////
@@ -509,7 +500,7 @@ FreeTorpedo::~FreeTorpedo() {}
 
 SepticBullet::SepticBullet(int start_x, int start_y, StudentWorld* world, bool player_spaceship_bullet, int image_id)
 : Actor(image_id, start_x, start_y, world), m_spaceship_bullet(player_spaceship_bullet), m_attack_power(2)
-{ set_visible(true); world->add_actor(this); if (!get_projectile_viewpoint()) { world->update_bullet_count(1); } }
+{ world->add_actor(this); if (!get_projectile_viewpoint()) { world->update_bullet_count(1); } }
 
 void SepticBullet::do_something(void)
 {
@@ -551,7 +542,7 @@ unsigned int SepticBullet::get_attack_power(void) const { return m_attack_power;
 
 void SepticBullet::set_attack_power(unsigned int value) { m_attack_power = value; }
 
-SepticBullet::~SepticBullet() { set_visible(false); if (!get_projectile_viewpoint()) { world()->update_bullet_count(-1); } }
+SepticBullet::~SepticBullet() { if (!get_projectile_viewpoint()) { world()->update_bullet_count(-1); } }
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////////-----------TORPEDO--------------//////////////////

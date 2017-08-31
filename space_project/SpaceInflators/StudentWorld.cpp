@@ -123,16 +123,16 @@ void StudentWorld::add_additional_actors(void) {
     // Add Wealthy Nachling
     if (rand_int(1, 10) < 2)
     {
-      //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
+      new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
       update_current_aliens_on_screen(1);
-      new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
+      //new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
     }
     // Add Nachling
     else
     {
       //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
-      //new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
-      new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
+      new Nachling(this, rand_int(0, 29), 39, 5 * get_round());
+      //new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
       update_current_aliens_on_screen(1);
     }
   }
@@ -140,6 +140,7 @@ void StudentWorld::add_additional_actors(void) {
   else
   {
     new Smallbot(this, rand_int(0, 29), 39, 12 * get_round());
+    //new WealthyNachling(this, rand_int(0, 29), 39, 8 * get_round());
     update_current_aliens_on_screen(1);
   }
 }
@@ -212,9 +213,9 @@ void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, 
           if (actor->get_x() == m_actors[i]->get_x() && actor->get_y() == m_actors[i]->get_y())
           {
             dynamic_cast<Spaceship*>(m_actors[i])->update_health(-(dynamic_cast<SepticBullet*>(actor)->get_attack_power()));
-            if (m_actors[i]->get_id() == IID_NACHLING)
+            if (m_actors[i]->get_id() == IID_SMALLBOT)
             {
-              //dynamic_cast<Smallbot*>(m_actors[i])->set_hit_by_player_status(true); // Inform the Smallbot object it was just hit
+              dynamic_cast<Smallbot*>(m_actors[i])->set_hit_by_player_status(true); // Inform the Smallbot object it was just hit
               if (dynamic_cast<Spaceship*>(m_actors[i])->get_health() <= 0) { increase_score(1000); }
             }
             else if (m_actors[i]->get_id() == IID_WEALTHY_NACHLING)
