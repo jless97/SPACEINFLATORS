@@ -224,7 +224,7 @@ void Nachling::do_something(void)
         if (y < 0) { set_dead(); nachling_world->update_aliens_left_this_round(1); }
         break;
       case 1:
-        if (nachling_world->get_player_spaceship_y_coord() < y) { set_state(2); }
+        if (nachling_world->get_player_spaceship_y_coord() > y) { set_state(2); break; }
         if (get_horizontal_movement_remaining() == 0)
         {
           // Flip the current horizontal direction of the Nachling

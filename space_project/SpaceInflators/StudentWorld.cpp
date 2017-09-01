@@ -31,7 +31,7 @@ using namespace std;
 GameWorld* create_student_world(string asset_dir) { return new StudentWorld(asset_dir); }
 
 StudentWorld::StudentWorld(std::string asset_dir)
-:GameWorld(asset_dir), m_round(5) {}
+:GameWorld(asset_dir), m_round(1) {}
 
 StudentWorld::~StudentWorld() { clean_up(); }
 
@@ -112,7 +112,7 @@ void StudentWorld::add_initial_actor(void) { m_spaceship = new Spaceship(this); 
 
 void StudentWorld::add_additional_actors(void) {
   // Generate star objects at random x coordinates in the space field
-  if (rand_int(1, 3) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
+  if (rand_int(1, 1) == 1) { new Star(rand_int(0, VIEW_WIDTH - 1), VIEW_HEIGHT - 1, this); }
   
   // If the number of aliens is greater than or equal to the number allowed per round, don't add more aliens
   if (get_current_aliens_on_screen() >= get_max_aliens_on_screen()) { return; }
@@ -148,7 +148,7 @@ void StudentWorld::add_additional_actors(void) {
 void StudentWorld::update_scoreboard(void) {
   // Update scoreboard fields
   unsigned int score = get_score();
-  unsigned int round = get_round() - 4;
+  unsigned int round = get_round();
   int energy = m_spaceship->get_health();
   if (energy < 0) { energy = 0; }
   unsigned int torpedoes = m_spaceship->get_torpedoes();
