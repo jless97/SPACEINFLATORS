@@ -217,7 +217,7 @@ void Nachling::do_something(void)
           { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y - 1); return; } }
           // If Nacling is to the right of the player spaceship, move diagonal left-down, don't allow movement next tick, instantly return
           else if (x > nachling_world->get_player_spaceship_x_coord())
-          { if (x > 0) { move_to(x - 1, y - 1); return; } }
+          { if (x > 1) { move_to(x - 1, y - 1); return; } }
         }
         else { move_to(x, y - 1); }
         // Check if the Nachling went below the bottom of the space field, if so remove Nachling from space field
@@ -237,7 +237,7 @@ void Nachling::do_something(void)
         // Move 1 step in the current horizontal direction
         if (get_horizontal_movement_direction() == Direction::right)
         { if (x < VIEW_WIDTH - 1) { move_to(x + 1, y); } }
-        else { if (x > 0) { move_to(x - 1, y); } }
+        else { if (x > 1) { move_to(x - 1, y); } }
         // Compute the change the Nachling will fire a projectile
         if (nachling_world->rand_int(0, (BASE_CHANCE_OF_FIRING / nachling_world->get_round())) == 0)
         {
@@ -252,7 +252,7 @@ void Nachling::do_something(void)
       case 2: 
         if (y == VIEW_HEIGHT - 1) { set_state(0); return; } // If at the top of the screen, set state to 0, and return
         // If at the far left of the screen, move diagonal up-right
-        if (x == 0)
+        if (x == 1)
         {
           set_horizontal_movement_direction(Direction::right);
           move_to(x + 1, y + 1);
@@ -377,8 +377,7 @@ void Smallbot::do_smallbot_movement(void)
   if (get_hit_by_player_status())
   {
     set_hit_by_player_status(false); // Reset this status
-    
-    if (x == 0) { move_to(x + 1, y - 1); }
+    if (x == 1) { move_to(x + 1, y - 1); }
     if (x == 29) { move_to(x - 1, y - 1); }
     else
     {
