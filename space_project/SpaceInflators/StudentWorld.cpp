@@ -35,6 +35,10 @@ StudentWorld::StudentWorld(std::string asset_dir)
 
 StudentWorld::~StudentWorld() { clean_up(); }
 
+///////////////////////////////////////////////////////////////////////////
+//////////-----------GAMEWORLD VIRTUAL FUNCTIONS--------------/////////////
+///////////////////////////////////////////////////////////////////////////
+
 void StudentWorld::init(void)
 {
   add_initial_actor(); // Add initial actors (i.e. player spaceship)
@@ -105,6 +109,10 @@ void StudentWorld::clean_up(void)
   }
 }
 
+///////////////////////////////////////////////////////////////////////////
+//////////////-----------ADDING ACTORS FUNCTIONS-------------//////////////
+///////////////////////////////////////////////////////////////////////////
+
 void StudentWorld::add_actor(Actor* actor) { m_actors.push_back(actor); }
 
 // Instantiate the player's spaceship
@@ -144,6 +152,10 @@ void StudentWorld::add_additional_actors(void) {
     update_current_aliens_on_screen(1);
   }
 }
+
+///////////////////////////////////////////////////////////////////////////
+/////////////////-----------SCOREBOARD FUNCTION-------------///////////////
+///////////////////////////////////////////////////////////////////////////
 
 void StudentWorld::update_scoreboard(void) {
   // Update scoreboard fields
@@ -196,6 +208,10 @@ int StudentWorld::get_max_aliens_on_screen(void) const { return m_max_aliens_on_
 int StudentWorld::get_current_aliens_on_screen(void) const { return m_current_aliens_on_screen; }
 
 int StudentWorld::get_bullet_count(void) const { return m_bullet_count; }
+
+///////////////////////////////////////////////////////////////////////////
+////////////-----------COLLISION-HANDLING FUNCTION-------------////////////
+///////////////////////////////////////////////////////////////////////////
 
 void StudentWorld::check_collision(Actor* actor, bool is_player, bool is_alien, bool is_projectile, bool is_goodie) {
   for (int i = 0; i < m_actors.size(); i++)
@@ -286,6 +302,10 @@ bool StudentWorld::in_line_with_player_spaceship(int x) const { return (m_spaces
 int StudentWorld::get_player_spaceship_x_coord(void) const { return m_spaceship->get_x(); }
 
 int StudentWorld::get_player_spaceship_y_coord(void) const { return m_spaceship->get_y(); }
+
+///////////////////////////////////////////////////////////////////////////
+/////////////-----------MATH/MATH HELPER FUNCTIONS-------------////////////
+///////////////////////////////////////////////////////////////////////////
 
 //Generate a random number (Equation used from Project 1 (no need to reinvent the wheel))
 int StudentWorld::rand_int(int min, int max) const {
