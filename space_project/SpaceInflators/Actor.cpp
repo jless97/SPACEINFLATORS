@@ -177,7 +177,7 @@ void Nachling::do_something(void)
     // If a Smallbot, then perhaps drop a Free Ship goodie
     if (is_smallbot())
     {
-      if (nachling_world->rand_int(1, 20) == 1) { new FreeShip(x, y, nachling_world); } // Add a FreeShip goodie to the space field
+      if (nachling_world->rand_int(1, 8) == 1) { new FreeShip(x, y, nachling_world); } // Add a FreeShip goodie to the space field
     }
     set_dead();
     nachling_world->play_sound(SOUND_ENEMY_DIE);
